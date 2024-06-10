@@ -13,7 +13,8 @@ class list {
     }
 
     bool valid() {
-      std::cout << "hash: " << hash << ", hash2: " << std::hash<std::string>{}(data) << std::endl;
+      std::cout << "hash: " << hash
+                << ", hash2: " << std::hash<std::string>{}(data) << std::endl;
       return std::hash<std::string>{}(data) == hash;
     }
 
@@ -42,18 +43,16 @@ public:
     return data;
   }
 
-  bool empty() const {
-    return !m_head;
-  }
+  bool empty() const { return !m_head; }
 
   void tamper(uint32_t d, std::string data) {
     auto i = uint32_t{0};
     auto current = m_head;
-    while(current && i < d) {
+    while (current && i < d) {
       current = current->next;
       ++i;
     }
-    if (!current){
+    if (!current) {
       return;
     }
     current->data = std::move(data);
@@ -78,18 +77,17 @@ private:
   node_ptr m_head;
 };
 
-
 // To execute C++, please define "int main()"
 int main() {
   auto l = list{};
   // true
   std::cout << "empty: " << std::to_string(l.empty()) << std::endl;
-    
+
   l.push("7500");
-    
+
   // false
   std::cout << "empty: " << std::to_string(l.empty()) << std::endl;
-    
+
   // "7500"
   std::cout << "front: " << l.pop() << std::endl;
   std::cout << "empty: " << std::to_string(l.empty()) << std::endl;
@@ -97,10 +95,10 @@ int main() {
   l.push("100");
   l.push("200");
   l.push("300");
-    
+
   // true
   std::cout << "valid: " << std::to_string(l.valid()) << std::endl;
-    
+
   l.tamper(1, "10000");
 
   // false
@@ -129,23 +127,22 @@ int main() {
 // l = new list()
 // // true
 // print(l.empty())
-  
+
 // l.push("7500")
-  
+
 // // false
 // print(l.empty())
-  
+
 // // "7500"
 // print(l.pop())
 
 // l.push("100")
 // l.push("200")
 // l.push("300")
-  
+
 // // true
 // print(l.valid())
-  
+
 // l.tamper(1, "10000")
 // // false
 // print(l.valid())
-

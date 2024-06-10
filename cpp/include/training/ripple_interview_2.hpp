@@ -4,25 +4,20 @@
 #include <thread>
 #include <vector>
 
-template <typename T>
-class threadsafe_vector
-{
+template <typename T> class threadsafe_vector {
 public:
-  threadsafe_vector(std::size_t size)
-    : m_vector(size)
-  {
-  }
+  threadsafe_vector(std::size_t size) : m_vector(size) {}
 
   T read(size_t index) const {
     auto [bi, ni] = block_for_index(index);
-    auto& l = m_vector[bi];
+    auto &l = m_vector[bi];
     auto lock = std::shared_lock<std::shared_mutex>{l.mutex};
     return l.storage[ni];
   }
 
-  void write(std::size_t index, T&& data) {
+  void write(std::size_t index, T &&data) {
     auto [bi, ni] = block_for_index(index);
-    auto& l = m_vector[bi];
+    auto &l = m_vector[bi];
     auto lock = std::unique_lock<std::shared_mutex>{l.mutex};
     l.storage[ni] = std::move(data);
   }
@@ -37,22 +32,15 @@ protected:
 private:
   constexpr static auto block_size = size_t{1};
 
-  struct lockable
-  {
-    lockable(std::size_t size = 1)
-    {
-      storage.resize(size);
-    }
+  struct lockable {
+    lockable(std::size_t size = 1) { storage.resize(size); }
 
-    lockable(const lockable& l)
-    : storage(l.storage)
-    {
-    }
+    lockable(const lockable &l) : storage(l.storage) {}
 
     std::vector<T> storage;
     mutable std::shared_mutex mutex;
   };
-  
+
   std::vector<lockable> m_vector;
 };
 
@@ -61,21 +49,15 @@ int main() {
   auto v = threadsafe_vector<std::string>{3};
 
   auto m = std::mutex{};
-  auto producer_thread_1 = std::thread{[&](){
-    v.write(0, "hello");
-  }};
-  auto producer_thread_2 = std::thread{[&](){
-    v.write(1, "world");
-  }};
-  auto producer_thread_3 = std::thread{[&](){
-    v.write(2, "foobar");
-  }};
-  auto consumer_thread_1 = std::thread{[&](){
+  auto producer_thread_1 = std::thread{[&]() { v.write(0, "hello"); }};
+  auto producer_thread_2 = std::thread{[&]() { v.write(1, "world"); }};
+  auto producer_thread_3 = std::thread{[&]() { v.write(2, "foobar"); }};
+  auto consumer_thread_1 = std::thread{[&]() {
     auto t = v.read(0);
     auto lock = std::lock_guard<std::mutex>{m};
     std::cout << t << std::endl;
   }};
-  auto consumer_thread_2 = std::thread{[&](){
+  auto consumer_thread_2 = std::thread{[&]() {
     auto t = v.read(1);
     auto lock = std::lock_guard<std::mutex>{m};
     std::cout << t << std::endl;

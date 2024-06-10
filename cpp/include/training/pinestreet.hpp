@@ -2,9 +2,9 @@
 #include <array>
 #include <cstring>
 #include <fstream>
+#include <tuple>
 #include <unordered_map>
 #include <vector>
-#include <tuple>
 
 namespace pinestreet {
 
@@ -33,11 +33,12 @@ public:
       return std::make_tuple(0, it->second.header);
     }
 
-    auto file_stream = std::ifstream{"blk00000.dat", std::ios::binary | std::ios::in};
+    auto file_stream =
+        std::ifstream{"blk00000.dat", std::ios::binary | std::ios::in};
     if (!file_stream.is_open()) {
       std::cout << "Not opened" << std::endl;
     }
-    
+
     auto current_block = size_t{0};
     auto magic_bytes = uint32_t{0};
     auto size = uint32_t{0};
@@ -47,15 +48,17 @@ public:
       return v;
       // auto result = decltype(v){};
       // for (size_t i = 0; i < sizeof(v); ++i) {
-      //   reinterpret_cast<char*>(&result)[i] = reinterpret_cast<char*>(&v)[sizeof(v) - i - 1];
+      //   reinterpret_cast<char*>(&result)[i] =
+      //   reinterpret_cast<char*>(&v)[sizeof(v) - i - 1];
       // }
       // return result;
     };
 
-    while(current_block <= block_height) {
-      file_stream.read(reinterpret_cast<char*>(&magic_bytes), sizeof(magic_bytes));
+    while (current_block <= block_height) {
+      file_stream.read(reinterpret_cast<char *>(&magic_bytes),
+                       sizeof(magic_bytes));
       magic_bytes = swap_endian(magic_bytes);
-      file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
+      file_stream.read(reinterpret_cast<char *>(&size), sizeof(size));
       size = swap_endian(size);
 
       if (current_block == block_height) {
@@ -75,19 +78,21 @@ public:
     b.magic = magic_bytes;
     b.size = size;
 
-    file_stream.read(reinterpret_cast<char*>(&b.header), sizeof(b.header));
+    file_stream.read(reinterpret_cast<char *>(&b.header), sizeof(b.header));
     b.header.version = swap_endian(b.header.version);
     b.header.time = swap_endian(b.header.time);
     b.header.nBits = swap_endian(b.header.nBits);
     b.header.nonce = swap_endian(b.header.nonce);
-    std::reverse(std::begin(b.header.previous_hash), std::end(b.header.previous_hash));
-    std::reverse(std::begin(b.header.merkle_root), std::end(b.header.merkle_root));
+    std::reverse(std::begin(b.header.previous_hash),
+                 std::end(b.header.previous_hash));
+    std::reverse(std::begin(b.header.merkle_root),
+                 std::end(b.header.merkle_root));
     m_blocks.emplace(block_height, b);
 
     return std::make_tuple(0, b.header);
   }
 
-  static query& instance() {
+  static query &instance() {
     static auto _instance = query{};
     return _instance;
   }
@@ -99,22 +104,22 @@ private:
   std::unordered_map<size_t, block> m_blocks;
 };
 
-namespace tests
-{
-void run_tests()
-{
-  auto print = [](const auto& height) {
+namespace tests {
+void run_tests() {
+  auto print = [](const auto &height) {
     auto [result, b] = query::instance().query_block_header(height);
     std::cout << "Block Height " << std::to_string(height) << std::endl;
     std::cout << std::to_string(b.version) << std::endl;
     auto ss = std::stringstream{};
     for (const auto c : b.previous_hash) {
-      ss << std::setfill('0') << std::setw(sizeof(c)*2) << std::hex << static_cast<uint32_t>(c);
+      ss << std::setfill('0') << std::setw(sizeof(c) * 2) << std::hex
+         << static_cast<uint32_t>(c);
     }
     std::cout << ss.str() << std::endl;
     ss = std::stringstream{};
     for (const auto c : b.merkle_root) {
-      ss << std::setfill('0') << std::setw(sizeof(c)*2) << std::hex << static_cast<uint32_t>(c);
+      ss << std::setfill('0') << std::setw(sizeof(c) * 2) << std::hex
+         << static_cast<uint32_t>(c);
     }
     std::cout << ss.str() << std::endl;
     std::cout << std::to_string(b.time) << std::endl;
@@ -132,6 +137,6 @@ void run_tests()
   print(9999);
   print(10000);
 }
-}
+} // namespace tests
 
-}
+} // namespace pinestreet

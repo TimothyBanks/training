@@ -1,7 +1,7 @@
 #include <string>
 
 namespace huffman {
-bool huffman(const std::string& s) {
+bool huffman(const std::string &s) {
   if (s.empty()) {
     return false;
   }
@@ -23,14 +23,12 @@ bool huffman(const std::string& s) {
 
   return encoded.size() < s.size();
 }
-namespace tests
-{
-void run_test()
-{
-  // “aaabbcc” -> “a3b2c2” : True 
+namespace tests {
+void run_test() {
+  // “aaabbcc” -> “a3b2c2” : True
   // “aaabcaa” -> “a3b1c1a2” : False
 
-  auto test = [](const std::string& s) {
+  auto test = [](const std::string &s) {
     std::cout << s << " " << std::to_string(huffman(s)) << std::endl;
   };
 
@@ -42,48 +40,34 @@ void run_test()
   test("aabbcc");
   test("z");
 }
-}
-}
+} // namespace tests
+} // namespace huffman
 
-
-
-struct Owner {
-
-};
+struct Owner {};
 
 struct Pet {
   Owner owner;
 };
 
-struct Cat : public Pet {
+struct Cat : public Pet {};
 
-};
+struct Dog : public Pet {};
 
-struct Dog : public Pet {
+struct Bird : public Pet {};
 
-};
-
-struct Bird : public Pet {
-
-};
-
-struct Robin : public Bird {
-
-};
+struct Robin : public Bird {};
 
 struct Appointment {
   timestamp time;
-  Pet* pet;
+  Pet *pet;
 };
 
+POST / base - url / <owner> / register -
+    pet{
+      "type" : "dog",
+      "name" : "",
+    }
 
-POST /base-url/<owner>/register-pet
-{
-  "type": "dog",
-  "name": "",
-}
-
-POST /base-url/<pet>/update-appointment
-{
-  
-}
+        POST /
+        base -
+    url / <pet> / update - appointment {}

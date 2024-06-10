@@ -15,6 +15,10 @@
 
 #include <training/range_response_processor.hpp>
 
+#include <training/mev.hpp>
+
+#include <training/millennium.hpp>
+
 template <typename T>
 std::ostream& operator<<(std::ostream& out, const std::vector<T>& v)
 {
@@ -129,9 +133,21 @@ void run_moving_average_tests()
 
 #include <training/pinestreet.hpp>
 
+
 int main (int argc, char *argv[])
 {
-  pinestreet::tests::run_tests();
+  millennium::tests::run_tests();
+  return 0;
+
+  auto result = bullish::calculate_mev({
+    {2, 50, 6},
+    {1, 70, 8},
+    {3, 40, 5},
+    {2, 60, 10}
+  }, 100);
+  std::cout << std::to_string(result) << "\n";
+
+  // pinestreet::tests::run_tests();
   // huffman::tests::run_test();
 
   // test_calculator();  

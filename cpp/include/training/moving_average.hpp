@@ -1,25 +1,21 @@
-#include <list>
 #include <deque>
+#include <list>
 
-namespace training
-{
+namespace training {
 class moving_average {
 public:
-  moving_average(size_t window)
-  : m_window_size{window}
-  {
-  }
+  moving_average(size_t window) : m_window_size{window} {}
 
   void push(size_t n) {
     if (m_buffer.size() == m_window_size) {
       m_sum -= m_buffer.front();
       m_buffer.pop_front();
-    } 
+    }
     m_buffer.push_back(n);
     m_sum += n;
   }
 
-  moving_average& operator()(size_t n) {
+  moving_average &operator()(size_t n) {
     push(n);
     return *this;
   }
@@ -33,4 +29,4 @@ private:
   size_t m_window_size{0};
   size_t m_sum{0};
 };
-}
+} // namespace training
