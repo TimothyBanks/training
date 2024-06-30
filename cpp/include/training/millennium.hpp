@@ -8,220 +8,224 @@
 
 namespace millennium {
 
-// // write a conversion function that translates string: "abc" -> "abc";
-// "ab3[cd]ef" -> abcdcdcdef"; "a2[b3[c]]" -> "abcccbccc" std::string
-// decode(const std::string_view& s)
-// {
-//     auto parts   = std::stack<std::string>{}; // stack to store the parts of
-//     the string auto counts  = std::stack<uint8_t>{};    // stack to store the
-//     number of times each count should be repeated parts.emplace(""); // start
-//     with an empty string
+// write a conversion function that translates string: "abc" -> "abc";
+// "ab3[cd]ef" -> abcdcdcdef"; "a2[b3[c]]" -> "abcccbccc"
+// std::string decode(const std::string_view& s) {
+//   auto parts = std::stack<std::string>{};
+//   auto counts = std::stack<uint8_t>{};
 
-//     // Handle edge case such as no opening bracket, no closing bracket,
-//     mismatch brackets, etc.
-
-//     for (auto i = size_t{0}; i < s.size(); ++i) {
-//         if (std::isdigit(s[i])) {
-//             // Assumming that count is always followed by a '['
-//             auto current_count = (s[i] - '0');
-//             while (std::isdigit(s[i + 1])) {
-//                 current_count = current_count * 10 + (s[++i] - '0');
-//             }
-//             counts.emplace(current_count);
-//         } else if (std::isalpha(s[i])) {
-//             parts.top().push_back(s[i]);
-//         } else if (s[i] == '[') {
-//             parts.emplace(""); // start a new part
-//         } else if (s[i] == ']') {
-//             auto part = parts.top();
-//             parts.pop();
-//             auto count = counts.top();
-//             counts.pop();
-//             while (count--) {
-//                 parts.top().append(part);
-//             }
-//         }
+//   parts.emplace();
+//   for (auto i = size_t{0}; i < s.size(); ++i) {
+//     if (std::isdigit(s[i])) {
+//       auto count = s[i] - '0';
+//       while (i + 1 < s.size() && std::isdigit(s[i + 1])) {
+//         count = (count * 10) + (s[++i] - '0');
+//       }
+//       counts.push(count);
+//     } else if (s[i] == '[') {
+//       parts.emplace();
+//     } else if (s[i] == ']') {
+//       auto count = counts.top();
+//       counts.pop();
+//       auto part = parts.top();
+//       parts.pop();
+//       while (count-- > 0) {
+//         parts.top() += part;
+//       }
+//     } else {
+//       parts.top() += s[i];
 //     }
-
-//     return parts.top();
+//   }
+//   return parts.top();
 // }
 
-// // Implement a hash map using smart pointers
-// template <typename K, typename V>
+// Implement a hash map using smart pointers
+// template <typename Key, typename Value>
 // struct hash_map
 // {
-//     using key_type = K;
-//     using value_type = V;
+//   using key_type   = Key;
+//   using value_type = Value;
 
 // private:
-//     struct node {
-//         key_type key;
-//         value_type value;
-//         std::unique_ptr<node> next;
-//     };
+//   struct node {
+//     node (key_type k_, value_type v_) : k{std::move(k_)}, v{std::move(v_)} {}
 
-//     using node_type  = std::unique_ptr<node>;
-//     using table_type = std::vector<node_type>;
-//     table_type table;
-//     size_t buckets = 10;
-//     size_t size    = 0;
+//     key_type k;
+//     value_type v;
+//     std::unique_ptr<node> next;
+//   };
+//   using node_ptr = std::unique_ptr<node>;
 
-//     size_t hash(const key_type& key) const {
-//         return std::hash<key_type>{}(key) % buckets;
+//   size_t node_count{0};
+//   size_t bucket_count{10};
+//   std::vector<node_ptr> buckets{bucket_count};
+
+//   size_t hash(const key_type& k) {
+//     return std::hash<key_type>{}(k) % bucket_count;
+//   }
+
+//   template <typename Functor>
+//   void for_each(node* ptr, Functor f) {
+//     auto current   = ptr;
+//     node* previous = nullptr;
+
+//     while (current) {
+//       if (f(current, previous)) {
+//         return;
+//       }
+//       previous = current;
+//       current  = current->next.get();
+//     }
+//   }
+
+//   bool insert(node_ptr ptr) {
+//     if (!ptr) {
+//       return false;
 //     }
 
-//     void insert(std::unique_ptr<node> node) {
-//         auto index = hash(node->key);
-//         if (!table[index]) {
-//             table[index] = std::move(node);
-//         } else {
-//             auto* current = table[index].get();
-//             while (current->next) {
-//                 current = current->next.get();
-//             }
-//             current->next = std::move(node);
-//         }
-//         ++size;
+//     auto index = hash(ptr->k);
+
+//     if (!buckets[index]) {
+//       buckets[index] = std::move(ptr);
+//       ++node_count;
+//       return true;
 //     }
 
-//     void resize(size_t new_buckets) {
-//         // When the table is resized, we need to rehash all the elements.
-//         auto temp_table = table_type{};
+//     node* n    = nullptr;
+//     auto found = false;
+//     for_each(buckets[index].get(), [&](auto current, auto previous){
+//       n = current;
+//       if (current->k != ptr->k) {
+//         return false;
+//       }
+//       found = true;
+//       return true;
+//     });
 
-//         // Drain the current table
-//         for (auto& bucket : table) {
-//             auto current = std::move(bucket);
-//             while (current) {
-//                 temp_table.emplace_back(std::move(current));
-//                 current = std::move(temp_table.back()->next);
-//                 temp_table.back()->next = nullptr;
-//             }
-//         }
-//         table.clear();
-//         table.resize(new_buckets);
-
-//         // Drain the temp_table back into the table
-//         size    = 0;
-//         buckets = new_buckets;
-//         for (auto& bucket : temp_table) {
-//             insert(std::move(bucket));
-//         }
+//     if (found) {
+//       n->v = std::move(ptr->v);
+//     } else {
+//       n->next = std::move(ptr);
+//       ++node_count;
 //     }
 
-//     template <typename Functor>
-//     void for_each(const node_type& node, Functor&& f) const {
-//         if (!node) {
-//             return;
-//         }
-//         auto* current  = node.get();
-//         auto* previous =  decltype(current){nullptr};
-//         while (current) {
-//             if (f(current, previous)) {
-//                 return;
-//             }
-//             previous = current;
-//             current  = current->next.get();
-//         }
+//     return !found;
+//   }
+
+//   void resize(size_t new_bucket_count) {
+//     auto temp = std::vector<node_ptr>{};
+
+//     for (auto& bucket : buckets) {
+//       if (!bucket) {
+//         continue;
+//       }
+//       temp.push_back(std::move(bucket));
+//       while (temp.back()->next) {
+//         auto current = std::move(temp.back()->next);
+//         temp.back()->next = nullptr;
+//         temp.push_back(std::move(current));
+//       }
 //     }
+
+//     bucket_count = new_bucket_count;
+//     node_count   = 0;
+//     buckets.clear();
+//     buckets.resize(bucket_count);
+
+//     for (auto& node : temp) {
+//       insert(std::move(node));
+//     }
+//   }
 
 // public:
-//     hash_map(size_t buckets = 10) : buckets{buckets}, table(buckets) {}
-//     hash_map(const hash_map&) = delete;
-//     hash_map(hash_map&&) = default;
+//   bool insert(key_type k, value_type v) {
+//     auto result = insert(std::make_unique<node>(std::move(k), std::move(v)));
+//     if (node_count == bucket_count) {
+//       resize(bucket_count * 2);
+//     }
+//     return result;
+//   }
 
-//     hash_map& operator=(const hash_map&) = delete;
-//     hash_map& operator=(hash_map&&) = default;
+//   void remove(const key_type& k) {
+//     auto index = hash(k);
 
-//     void insert(key_type key, value_type value) {
-//         // If we wanted a static table, then just remove this line
-//         if (size >= buckets) {
-//             resize(buckets * 2);
-//         }
-//         insert(std::make_unique<node>(node{key, value, nullptr}));
+//     if (!buckets[index]) {
+//       return;
 //     }
 
-//     void remove(const key_type& key) {
-//         auto index = hash(key);
-
-//         if (!table[index]) {
-//             return;
-//         }
-
-//         for_each(table[index], [&](auto* current, auto* previous) {
-//             if (current->key == key) {
-//                 if (previous) {
-//                     previous->next = std::move(current->next);
-//                 } else {
-//                     table[index] = std::move(current->next);
-//                 }
-//                 --size;
-//                 return true;
-//             }
-//             return false;
-//         });
+//     if (buckets[index]->k == k) {
+//       buckets[index] = std::move(buckets[index]->next);
+//       return;
 //     }
 
-//     value_type find(const key_type& key) const {
-//         auto index  = hash(key);
-//         auto result = value_type{};
+//     for_each(buckets[index].get(), [&](auto current, auto previous){
+//       if (current->k != k) {
+//         return false;
+//       }
+//       previous->next = std::move(current->next);
+//       return true;
+//     });
+//   }
 
-//         if (!table[index]) {
-//             return result;
-//         }
+//   value_type& find(const key_type& k) {
+//     auto index = hash(k);
 
-//         for_each(table[index], [&](auto* current, auto* previous) {
-//             if (current->key == key) {
-//                 result = current->value;
-//                 return true;
-//             }
-//             return false;
-//         });
+//     node* n = nullptr;
+//     for_each(buckets[index].get(), [&](auto current, auto previous){
+//       if (current->k != k) {
+//         return false;
+//       }
+//       n = current;
+//       return true;
+//     });
 
-//         return result;
+//     if (!n) {
+//       throw "key not found";
 //     }
+//     return n->v;
+//   }
 // };
 
 // write a conversion function that translates string: "abc" -> "abc";
 // "ab3[cd]ef" -> abcdcdcdef"; "a2[b3[c]]" -> "abcccbccc"
-std::string decode(const std::string_view &s) {
-  auto parts = std::stack<std::string>{};
-  auto counts = std::stack<int8_t>{};
-  auto paren_count = uint8_t{0};
+std::string decode(const std::string_view& s) {
+  auto chunks = std::stack<std::string>{};
+  auto counts = std::stack<uint8_t>{};
 
-  parts.push("");
+  chunks.emplace();
   for (auto i = size_t{0}; i < s.size(); ++i) {
     if (std::isdigit(s[i])) {
-      auto current = s[i] - '0';
-      while (std::isdigit(s[i + 1]) && i < s.size()) {
-        current = (current * 10) + (s[++i] - '0');
+      auto count = s[i] - '0';
+      while (i + 1 < s.size() && std::isdigit(s[i + 1])) {
+        count = (count * 10) + (s[++i] - '0');
       }
-      counts.push(current);
-    } else if (s[i] == '[') {
-      parts.push("");
+      counts.push(count);
+    } else if(s[i] == '[') {
+      chunks.emplace();
     } else if (s[i] == ']') {
+      auto chunk = chunks.top();
+      chunks.pop();
       auto count = counts.top();
       counts.pop();
-      auto part = parts.top();
-      parts.pop();
       while (count-- > 0) {
-        parts.top() += part;
+        chunks.top() += chunk;
       }
     } else {
-      parts.top() += s[i];
+      chunks.top() += s[i];
     }
   }
-
-  return parts.top();
+  return chunks.top();
 }
 
 // Implement a hash map using smart pointers
-template <typename Key, typename Value> struct hash_map {
-  using key_type = Key;
+template <typename Key, typename Value>
+struct hash_map {
+  using key_type   = Key;
   using value_type = Value;
 
-private:
+protected:
   struct node {
-    node(key_type k, value_type v) : k{std::move(k)}, v{std::move(v)} {}
+    node(key_type k_, value_type v_) : k{std::move(k_)}, v{std::move(v_)} {}
 
     key_type k;
     value_type v;
@@ -229,128 +233,140 @@ private:
   };
   using node_ptr = std::unique_ptr<node>;
 
-  size_t bucket_count{10};
-  std::vector<node_ptr> buckets{bucket_count}; // This is dynamic in nature.
-  size_t node_count{0};
+  size_t node_count   = 0;
+  size_t bucket_count = 10;
+  std::vector<node_ptr> buckets{bucket_count};
 
-  size_t hash(const key_type &k) {
+  size_t hash(const key_type& k) const {
     return std::hash<key_type>{}(k) % bucket_count;
   }
 
-  template <typename Functor> void for_each(node_ptr &bucket, Functor f) {
-    auto *current = bucket.get();
-    node *previous = nullptr;
+  template <typename Functor>
+  void for_each(node* ptr, Functor f) const {
+    if (!ptr) {
+      return;
+    }
+
+    auto current   = ptr;
+    node* previous = nullptr;
     while (current) {
       if (f(current, previous)) {
         return;
       }
       previous = current;
-      current = current->next.get();
+      current  = current->next.get();
     }
   }
 
-  bool insert_(node_ptr ptr) {
-    auto index = hash(ptr->k);
+  bool insert(node_ptr ptr) {
+    if (!ptr) {
+      return false;
+    }
 
-    if (buckets[index] == nullptr) {
-      buckets[index] = std::move(ptr);
+    auto index = hash(ptr->k);
+    auto& root = buckets[index];
+    if (!root) {
+      root = std::move(ptr);
       ++node_count;
       return true;
     }
 
-    auto updated = false;
-    node *parent = nullptr;
-    for_each(buckets[index], [&](auto *current, auto *previous) {
-      parent = current;
+    node* insertion_point = nullptr;
+    auto found = false;
+    for_each(root.get(), [&](auto current, auto previous){
+      insertion_point = current;
       if (current->k == ptr->k) {
-        current->v = ptr->v;
-        updated = true;
-        return true;
+        found = true;
       }
-      return false;
+      return found;
     });
-    if (!updated) {
-      parent->next = std::move(ptr);
-      ++node_count;
+
+    if (found) {
+      insertion_point->v = std::move(ptr->v);
+    } else {
+      insertion_point->next = std::move(ptr);
     }
-    return !updated;
+
+    return !found;
   }
 
   void resize(size_t new_bucket_count) {
+    if (new_bucket_count == bucket_count) {
+      return;
+    }
+
     auto temp = std::vector<node_ptr>{};
 
-    for (auto &bucket : buckets) {
+    for (auto& bucket : buckets) {
       if (!bucket) {
         continue;
       }
       temp.push_back(std::move(bucket));
       while (temp.back()->next) {
-        auto &previous = temp.back();
-        auto current = std::move(previous->next);
-        previous->next = nullptr;
-        temp.push_back(std::move(current));
+        temp.push_back(std::move(temp.back()->next));
       }
     }
 
-    // Clear the current table.
-    buckets.clear();
-    buckets.resize(new_bucket_count);
-    bucket_count = new_bucket_count;
     node_count = 0;
+    bucket_count = new_bucket_count;
+    buckets.clear();
+    buckets.resize(bucket_count);
 
-    // Rehash.
-    for (auto &ptr : temp) {
-      insert_(std::move(ptr));
+    for (auto& bucket : temp) {
+      insert(std::move(bucket));
     }
   }
 
 public:
   bool insert(key_type k, value_type v) {
-    auto result = insert_(std::make_unique<node>(std::move(k), std::move(v)));
-    if (node_count > bucket_count) {
-      resize(bucket_count * 2);
+    auto result = insert(std::make_unique<node>(std::move(k), std::move(v)));
+    if (node_count == bucket_count) {
+      resize(2 * bucket_count);
     }
     return result;
   }
 
-  void remove(const key_type &k) {
+  void erase(const key_type k) {
     auto index = hash(k);
-    if (!buckets[index]) {
+
+    auto& root = buckets[index];
+    if (!root) {
       return;
     }
-    for_each(buckets[index], [&](auto *current, auto *previous) {
-      if (current->k == k) {
-        if (!previous) {
-          auto next = std::move(current->next);
-          buckets[index] = std::move(next);
-        } else {
-          previous->next = std::move(current->next);
-        }
-        --node_count;
-        return true;
+
+    for_each(root.get(), [&](auto current, auto previous){
+      if (current->k != k) {
+        return false;
       }
-      return false;
+
+      if (!previous) {
+        root->next = std::move(current->next);
+      } else {
+        previous->next = std::move(current->next);
+      }
+
+      return true;
     });
   }
 
-  value_type &find(const key_type &k) {
+  const value_type& find(const key_type& k) const {
     auto index = hash(k);
-    if (!buckets[index]) {
-      throw "key not found";
-    }
-    node *n = nullptr;
-    for_each(buckets[index], [&](auto *current, auto *previous) {
-      if (current->k == k) {
-        n = current;
-        return true;
+
+    auto& root = buckets[index];
+    node* ptr  = nullptr;
+    for_each(root.get(), [&](auto current, auto previous){
+      if (current->k != k) {
+        return false;
       }
-      return false;
+      ptr = current;
     });
-    if (!n) {
+
+    if (!ptr) {
       throw "key not found";
     }
-    return n->v;
+    return ptr->v;
   }
+
 };
 
 template <class... Ts> struct overloaded : Ts... {
@@ -380,6 +396,7 @@ private:
   using node_ptr = std::shared_ptr<node>;
   node_ptr root;
 
+  // TODO:  Look at how this is done using coroutines!!!!!!
   template <typename Functor> void breadth_first(Functor f) {
     if (!root) {
       return;
@@ -411,7 +428,7 @@ private:
       return;
     }
 
-    auto s = std::stack<node_ptr>{};
+    auto s       = std::stack<node_ptr>{};
     auto current = root;
 
     while (current || !s.empty()) {
@@ -419,6 +436,7 @@ private:
         if (f(current->v)) {
           return;
         }
+
         if (current->right) {
           s.push(current->right);
         }
@@ -435,7 +453,7 @@ private:
       return;
     }
 
-    auto s = std::stack<node_ptr>{};
+    auto s       = std::stack<node_ptr>{};
     auto current = root;
 
     while (current || !s.empty()) {
@@ -458,24 +476,24 @@ private:
       return;
     }
 
-    auto s = std::stack<node_ptr>{};
-    auto current = root;
-    node_ptr last_visited;
+    auto s                = std::stack<node_ptr>{};
+    auto current          = root;
+    node_ptr last_visited = nullptr;
 
     while (current || !s.empty()) {
       if (current) {
         s.push(current);
         current = current->left;
       } else {
-        auto &peek = s.top();
+        auto peek = s.top();
         if (peek->right && peek->right != last_visited) {
           current = peek->right;
         } else {
-          last_visited = peek;
           if (f(peek->v)) {
             return;
           }
           s.pop();
+          last_visited = peek;
         }
       }
     }
@@ -501,42 +519,38 @@ public:
 
   static tree<Value> construct(
       const std::vector<std::variant<std::monostate, value_type>> &items) {
-    if (items.empty()) {
-      return {};
-    }
-
-    auto create = [](const auto &element) {
-      return std::visit(
-          overloaded{
-              [](const std::monostate &) { return std::shared_ptr<node>{}; },
-              [](const value_type &v) { return std::make_shared<node>(v); },
-          },
-          element);
-    };
-
-    auto result = tree<Value>{};
-    result.root = create(items[0]);
-
-    auto nodes = std::queue<node_ptr>{};
-    nodes.push(result.root);
-
-    for (auto i = size_t{1}; i < items.size(); i += 2) {
-      auto parent = nodes.front();
-      nodes.pop();
-
-      parent->left = create(items[i]);
-      parent->right = create(items[i + 1]);
-
-      if (parent->left) {
-        nodes.push(parent->left);
+      if (items.empty()) {
+        return {};
       }
 
-      if (parent->right) {
-        nodes.push(parent->right);
-      }
-    }
+      auto create = [](const auto& item) {
+        return std::visit(overloaded{
+          [](std::monostate) { return std::shared_ptr<node>{}; },
+          [](value_type v) { return std::make_shared<node>(std::move(v)); }
+        }, item);
+      };
 
-    return result;
+      auto nodes = std::queue<node_ptr>{};
+      auto t     = tree<Value>{};
+      t.root     = create(items[0]);
+      nodes.push(t.root);
+
+      for (auto i = size_t{1}; i < items.size(); i+=2) {
+        auto parent = nodes.front();
+        nodes.pop();
+
+        parent->left  = create(items[i]);
+        parent->right = create(items[i + 1]);
+
+        if (parent->left) {
+          nodes.push(parent->left);
+        }
+        if (parent->right) {
+          nodes.push(parent->right);
+        }
+      }
+
+      return t;
   }
 };
 
@@ -564,15 +578,15 @@ template <typename T> struct sort {
     return result;
   }
 
-  static std::vector<T> insertion(const std::vector<T> &v) {
+  static std::vector<T> selection(const std::vector<T> &v) {
     auto result = v;
 
     if (v.empty()) {
       return v;
     }
 
-    for (size_t i = 1; i < result.size(); ++i) {
-      for (int64_t j = i; j > 0; --j) {
+    for (auto i = size_t{1}; i < result.size(); ++i) {
+      for (auto j = i; j > 0; --j) {
         if (result[j] < result[j - 1]) {
           std::swap(result[j], result[j - 1]);
         }
@@ -582,75 +596,71 @@ template <typename T> struct sort {
     return result;
   }
 
-  static std::vector<T> selection(const std::vector<T> &v) {
+  static std::vector<T> insertion(const std::vector<T> &v) {
     auto result = v;
 
-    if (v.empty()) {
-      return v;
-    }
-
-    for (auto i = size_t{0}; i < result.size() - 1; ++i) {
-      auto min = i;
-      for (auto j = i + 1; j < result.size(); ++j) {
-        if (result[j] < result[min]) {
-          min = j;
+    for (auto i = size_t{1}; i < result.size(); ++i) {
+      for (auto j = i; j > 0; --j) {
+        if (result[j] < result[j - 1]) {
+          std::swap(result[j], result[j - 1]);
         }
       }
-      std::swap(result[i], result[min]);
     }
 
     return result;
   }
 
-  static std::vector<T> merge(const std::vector<T> &v) {
-    if (v.size() <= 1) {
+  static std::vector<T> merge(const std::vector<T>& v) {
+    if (v.size() < 2) {
       return v;
-    }
+    } 
 
-    auto left =
-        merge(std::vector<T>{std::begin(v), std::begin(v) + v.size() / 2});
-    auto right =
-        merge(std::vector<T>{std::begin(v) + v.size() / 2, std::end(v)});
-    auto result = std::vector<T>{};
+    auto mid = v.size() / 2;
+    auto left = merge({std::begin(v), std::begin(v) + mid});
+    auto right = merge({std::begin(v) + mid, std::end(v)});
 
     auto li = size_t{0};
     auto ri = size_t{0};
 
+    auto result = std::vector<T>{};
     while (li < left.size() && ri < right.size()) {
-      result.push_back(left[li] < right[ri] ? left[li++] : right[ri++]);
-    }
+      if (left[li] < right[ri]) {
+        result.push_back(left[li++]);
+      } else {
+        result.push_back(right[ri++]);
+      }
+    }    
 
-    while (li < left.size()) {
+    while (li < left.size() ) {
       result.push_back(left[li++]);
-    }
+    }    
 
-    while (ri < right.size()) {
+    while (ri < right.size() ) {
       result.push_back(right[ri++]);
     }
 
     return result;
   }
 
-  static void quick(std::vector<T> &v, size_t begin, size_t end) {
+  static void quick(std::vector<T> &v, int64_t begin, int64_t end) {
     if (begin >= end) {
       return;
     }
 
-    auto partition = [](auto &v, auto start, auto end) {
-      auto begin = start;
-      for (auto i = start; i < end; ++i) {
-        if (v[i] <= v[end]) {
-          std::swap(v[begin++], v[i]);
+    auto partition = [&]() {
+      auto start = begin;
+      for (auto i = begin; i < end; ++i) {
+        if (v[i] < v[end]) {
+          std::swap(v[i], v[start++]);
         }
       }
-      // move the pivot to the its final spot
-      std::swap(v[begin], v[end]);
-      return begin;
+      // Move the element at end to its final position
+      std::swap(v[start], v[end]);
+      return start; // Return the pivot.
     };
-
-    partition(v, 0, end);
-    quick(v, 0, begin);
-    quick(v, begin + 1, end);
+    auto pivot = partition();
+    quick(v, begin, pivot - 1);
+    quick(v, pivot + 1, end);
   }
 
   static std::vector<T> quick(const std::vector<T> &v) {
@@ -660,11 +670,73 @@ template <typename T> struct sort {
   }
 };
 
+class Base
+{
+    using print_callback = std::function<void(void)>;
+    
+public:
+    Base() : print_{[this]() { 
+        ++this->size_;
+        std::cout << "Base" << std::endl; 
+        std::cout << "size_: " << size_ << std::endl;
+    }}
+    {}
+
+    void print() const 
+    {
+        print_();
+    }
+    
+protected:
+    print_callback print_;
+    std::size_t size_{1};
+};
+
+class Derived : public Base
+{
+public:
+    Derived() : Base() {
+        auto base_version = print_;
+        print_ = [this, base_version](){ 
+            base_version(); 
+            ++this->extraSize_;
+            std::cout << "Derived" << std::endl; 
+            std::cout << "extraSize_: " << extraSize_ << std::endl;
+        };
+    }
+    
+    std::size_t extraSize_{2};
+};
+
+class DerivedDerived : public Derived
+{
+public:
+    DerivedDerived() : Derived() {
+        print_ = [](){ std::cout << "DerivedDerived" << std::endl; };
+    }
+};
+
 namespace tests {
 void run_tests() {
+  //   Base* b = new Base;
+  //   const Base* b2 = b;
+  //   b2->print();
+    
+  //   const Derived* de = new Derived;
+  //   de->print();
+    
+  //   const DerivedDerived* dd = new DerivedDerived;
+  //   dd->print();
+    
+  //   const Base* bd = new Derived;
+  //   bd->print();
+  // return;
+
   auto d = decode("abc");
   std::cout << d << std::endl;
   d = decode("ab3[cd]ef");
+  std::cout << d << std::endl;
+  d = decode("ab10[cd]ef");
   std::cout << d << std::endl;
   d = decode("a2[b3[c]]");
   std::cout << d << std::endl;
@@ -744,3 +816,122 @@ void run_tests() {
 } // namespace tests
 
 } // namespace millennium
+
+// Actual first round interview question
+/*
+#include <cmath>
+#include <cstdio>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <functional>
+
+using namespace std;
+
+class Base
+{
+    using print_callback = std::function<void(void)>;
+    
+public:
+    Base() : print_{[&]() { 
+        ++size_;
+        std::cout << "Base" << std::endl; 
+        std::cout << "size_: " << size_ << std::endl;
+    }}
+    {}
+
+    void print() const 
+    {
+        print_();
+    }
+    
+protected:
+    print_callback print_;
+    std::size_t size_{1};
+};
+
+class Derived : public Base
+{
+public:
+    Derived() : Base() {
+        auto base_version = print_;
+        print_ = [&](){ 
+            base_version(); 
+            ++extraSize_;
+            std::cout << "Derived" << std::endl; 
+            std::cout << "extraSize_: " << extraSize_ << std::endl;
+        };
+    }
+    
+    std::size_t extraSize_{2};
+};
+
+class DerivedDerived : public Derived
+{
+public:
+    DerivedDerived() : Derived() {
+        print_ = [](){ std::cout << "DerivedDerived" << std::endl; };
+    }
+};
+
+
+
+int main() {
+
+    //
+    Base* b = new Base;
+    const Base* b2 = b;
+    b2->print();
+    
+    const Derived* d = new Derived;
+    d->print();
+    
+    const DerivedDerived* dd = new DerivedDerived;
+    dd->print();
+    
+    const Base* bd = new Derived;
+    bd->print();
+        
+
+    return 0;
+}
+
+*/
+
+
+
+/*
+Blockchain consensus algorithms
+
+PoW (Proof of Work)
+1.  Nodes solve an computational problem based on a series of transactions 
+they have choosen to be included within the block.  The first node that 
+solves this problem (normally it is generating a block hash that is less than some number)
+gets to proposed the block to be added to the network.
+2.  The proposed block will be sent to the other nodes for verification.
+This verification may include verifying the transactions in it are valid and signed, 
+the previous block hash is correct, the proof of work is correct, the timestamp is 
+greater than the previous block, verifies the merkle tree of the transactions within the
+block to make sure transactions have not been tampered with, etc.
+3.  Once the block has been verified, it will be added to the local state and propogated
+to the rest of the network.
+4.  There may temporarily be multiple forks on each node during the mining and verification chain.
+The longest chain wins.
+
+PoS
+1.  Nodes stake some assets into the network and then they are randomly selected to produced blocks
+based on the size of their stake.
+2.  The selected node will gather the transactions they want to include within the block and broadcast
+the block to the network.
+3.  Other validator nodes will validate the new block and if a quorum of validators approve the block it 
+is added to the network.
+4.  These networks can also have local temporary forks and will use some sort of algorithm for determiningg
+the correct fork.
+
+DPoS
+1.  Nodes stake some assets into the network and then vote for a small number of validators to produce
+and validate blocks on behalf of the network.
+2.  Each elected validator take a turn at producing blocks in a predefined order.  If a validator fails 
+to produce a block, the next validator in order will take over.
+DPoS has a higher efficiency (given the smaller number of validators) and faster block times than PoS.
+*/

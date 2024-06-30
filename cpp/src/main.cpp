@@ -12,6 +12,7 @@
 #include <training/tree.hpp>
 #include <training/moving_average.hpp>
 #include <training/near_interview.hpp>
+#include <training/anchorage.hpp>
 
 #include <training/range_response_processor.hpp>
 
@@ -136,16 +137,16 @@ void run_moving_average_tests()
 
 int main (int argc, char *argv[])
 {
-  millennium::tests::run_tests();
-  return 0;
+  anchorage::tests::run_tests();
+  // millennium::tests::run_tests();
 
-  auto result = bullish::calculate_mev({
-    {2, 50, 6},
-    {1, 70, 8},
-    {3, 40, 5},
-    {2, 60, 10}
-  }, 100);
-  std::cout << std::to_string(result) << "\n";
+  // auto result = bullish::calculate_mev({
+  //   {2, 50, 6},
+  //   {1, 70, 8},
+  //   {3, 40, 5},
+  //   {2, 60, 10}
+  // }, 100);
+  // std::cout << std::to_string(result) << "\n";
 
   // pinestreet::tests::run_tests();
   // huffman::tests::run_test();
