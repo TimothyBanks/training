@@ -13,113 +13,181 @@ namespace anchorage {
 // Any dead cell with exactly three live neighbors becomes a live cell by reproduction.
 struct game_of_life {
 
-using board = std::vector<std::vector<int16_t>>;
+    using board = std::vector<std::vector<int16_t>>;
 
-template <typename Functor>
-static void for_each(board& b, Functor functor) {
-    for (auto i = size_t{0}; i < b.size(); ++i) {
-        auto& row = b[i];
-        for (auto j = size_t{0}; j < row.size(); ++j) {
-            functor(b, i, j);
+private:
+    template <typename Functor>
+    static void for_each(board& b, Functor f) {
+        for (auto i = size_t{0}; i < b.size(); ++i) {
+            auto& row = b[i];
+            for (auto j = size_t{0}; j < row.size(); ++j) {
+                f(b, i, j);
+            }
         }
     }
-};
 
-static void print(board& b) {
-    for_each(b, [](auto& bb, auto i, auto j){
-        std::cout << bb[i][j] << ",";
-        if (j == bb[i].size() - 1) {
-            std::cout << std::endl;
-        }
-    });
-}
-
-static board& iterate(board& b) {
-    auto for_each_neighbor = [](auto& bb, auto i, auto j, auto functor) {
+    template <typename Functor>
+    static void for_each(board& b, size_t i, size_t j, Functor f) {
         for (auto ii = -1; ii < 2; ++ii) {
-            if (i + ii < 0 || i + ii >= bb.size()) {
+            auto n_i = i + ii;
+            if (n_i < 0 || n_i >= b.size()) {
                 continue;
             }
 
+            auto& row = b[n_i];
             for (auto jj = -1; jj < 2; ++jj) {
-                if (j + jj < 0 || j + jj >= bb[i].size()) {
+                auto n_j = j + jj;    
+                if (n_j < 0 || n_j >= row.size()) {
+                    continue;
+                }   
+
+                if (n_i == i && n_j == j) {
                     continue;
                 }
 
-                if (ii == 0 && jj == 0) {
-                    // This is the cell, not a neighbor
-                    continue;
-                }
-
-                functor(bb, i + ii, j + jj);
+                f(b, i, j, n_i, n_j);
             }
         }
-    };
+    }
 
-    for_each(b, [&for_each_neighbor](auto& bb, auto i, auto j) {
-        for_each_neighbor(bb, i, j, [&](auto& bbb, auto ii, auto jj) {
-            if (bbb[ii][jj] < 1) {
-                return;
-            }
-
-            if (bbb[i][j] > 0) {
-                ++(bbb[i][j]);
-            } else {
-                --(bbb[i][j]);
+public:
+    static void print(board& b) {
+        for_each(b, [](auto& b, auto i, auto j){
+            std::cout << b[i][j] << ", ";
+            if (j == b[i].size() - 1) {
+                std::cout << std::endl;
             }
         });
-    });
+    }
 
-    for_each(b, [](auto& bb, auto i, auto j) {
-        if (bb[i][j] > 0 && bb[i][j] < 3) {
-            bb[i][j] = 0;
-        } else if(bb[i][j] > 0 && bb[i][j] <= 4) {
-            bb[i][j] = 1;
-        } else if (bb[i][j] > 0) {
-            bb[i][j] = 0;
-        } else if (bb[i][j] == -3) {
-            bb[i][j] = 1;
-        } else {
-            bb[i][j] = 0;
-        }
-    });
+    static board& iterate(board& b) {
+        for_each(b, [](auto& b, auto i, auto j){
+            for_each(b, i, j, [](auto& b, auto i, auto j, auto ni, auto nj) {
+                if (b[ni][nj] < 1) {
+                    // Dead
+                    return;
+                }
 
-    return b;
-}
+                auto& cell = b[i][j];
+                if (cell > 0) {
+                    // Keep counting up to indicate cell was originally alive.
+                    ++cell;
+                } else {
+                    // Keep counting down to indicate cell was originally dead.
+                    --cell;
+                }
+            });
+        });
+
+        for_each(b, [](auto& b, auto i, auto j) {
+            auto& cell = b[i][j];
+
+            if (cell > 0) {
+                // Remember, the count start at 1, so we need to factor that in.
+                if (cell < 3 || cell > 4) {
+                    cell = 0;
+                } else {
+                    cell = 1;
+                }
+            } else if (cell == -3) {
+                cell = 1;
+            } else {
+                cell = 0;
+            }
+        });
+
+        return b;
+    }
 
 };
 
 namespace tests {
 
 void run_tests() {
-    auto gof = game_of_life::board{
+    auto execute = [](auto board) {
+        game_of_life::print(game_of_life::iterate(board));
+        std::cout << std::endl;
+        game_of_life::print(game_of_life::iterate(board));
+        std::cout << std::endl;
+        game_of_life::print(game_of_life::iterate(board));
+        std::cout << std::endl;
+    };
+
+    execute(game_of_life::board {
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 0, 0, 1, 1, 0, 0, 0, 0, 0},
         {0, 0, 0, 0, 1, 0, 0, 0, 0, 0}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-    };
+    });
 
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
-
-    gof = game_of_life::board{
+    execute(game_of_life::board {
         {0, 0, 0, 0, 0},
         {0, 1, 1, 0, 0}, 
         {0, 0, 0, 1, 0}, 
         {0, 0, 0, 0, 0}, 
-    };
+    });
 
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
-    game_of_life::print(game_of_life::iterate(gof));
-    std::cout << std::endl;
+    execute(game_of_life::board {
+        {1, 0, 1, 1},
+        {1, 1, 0, 0},
+        {1, 1, 0, 1},
+        {0, 1, 1, 0},
+        {0, 0, 0, 0},
+    });
+
+    /*
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+
+0, 0, 0, 0, 0, 
+0, 0, 1, 0, 0, 
+0, 0, 1, 0, 0, 
+0, 0, 0, 0, 0, 
+
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+0, 0, 0, 0, 0, 
+
+1, 0, 1, 0, 
+0, 0, 0, 1, 
+0, 0, 0, 0, 
+1, 1, 1, 0, 
+0, 0, 0, 0, 
+
+0, 0, 0, 0, 
+0, 0, 0, 0, 
+0, 1, 1, 0, 
+0, 1, 0, 0, 
+0, 1, 0, 0, 
+
+0, 0, 0, 0, 
+0, 0, 0, 0, 
+0, 1, 1, 0, 
+1, 1, 0, 0, 
+0, 0, 0, 0, 
+    */
 }
 }
 }
