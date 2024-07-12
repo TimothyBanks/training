@@ -5,6 +5,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <variant>
 
 namespace millennium {
 
@@ -359,6 +360,7 @@ public:
         return false;
       }
       ptr = current;
+      return true;
     });
 
     if (!ptr) {

@@ -91,6 +91,7 @@ int32_t solve(solve_by by, const std::vector<T> &left,
     return details::memoization(left, left.size(), right, right.size(), lookup);
   } break;
   }
+  throw "invalid solve_by";
 }
 } // namespace longest_common_subsequence
 
@@ -164,6 +165,7 @@ template <typename T> int32_t solve(solve_by by, const std::vector<T> &v) {
     return details::memoization(v, v.size() - 1, lookup);
   } break;
   }
+  throw "invalid solve_by";
 }
 } // namespace longest_increasing_subsequence
 
@@ -249,6 +251,7 @@ int32_t solve(solve_by by, const std::vector<T> &coins, T amount) {
     return details::memoization(coins, 0, amount, lookup);
   } break;
   }
+  throw "invalid solve_by";
 }
 } // namespace make_coins
 
@@ -347,6 +350,7 @@ int32_t solve(solve_by by, const std::vector<T> &v, int32_t k) {
     return details::memoization(v, 0, k, lookup);
   } break;
   }
+  throw "invalid solve_by";
 }
 } // namespace minimum_product
 
@@ -355,15 +359,15 @@ namespace kth_largest_sum {
  */
 namespace details {
 template <typename T>
-int32_t brute_force(const std::vector<T> &v, size_t index, int32_t k) {}
+int32_t brute_force(const std::vector<T> &v, size_t index, int32_t k) { return 0; }
 
 using lookup_table =
     std::unordered_map<size_t, std::unordered_map<size_t, int32_t>>;
 template <typename T>
 int32_t memoization(const std::vector<T> &v, size_t index, int32_t k,
-                    lookup_table &table) {}
+                    lookup_table &table) { return 0; }
 
-template <typename T> int32_t bottom_up(const std::vector<T> &v, int32_t k) {}
+template <typename T> int32_t bottom_up(const std::vector<T> &v, int32_t k) { return 0; }
 } // namespace details
 
 template <typename T>

@@ -1,5 +1,9 @@
 #include <unordered_map>
 
+#pragma GCC diagnostic push 
+#pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
+#pragma GCC diagnostic ignored "-Wdeprecated-anon-enum-enum-conversion"
+
 namespace training {
 
 namespace details {
@@ -78,3 +82,6 @@ uint64_t fibonacci(uint64_t n) {
 }
 
 } // namespace training
+
+
+#pragma GCC diagnostic pop
