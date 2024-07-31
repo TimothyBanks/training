@@ -1,5 +1,5 @@
-#include <iostream>
 #include <jsoncpp/json/json.h>
+#include <iostream>
 #include <stack>
 #include <unordered_map>
 #include <unordered_set>
@@ -14,8 +14,10 @@ using assets =
     std::unordered_map<std::string, std::unordered_map<std::string, double>>;
 using visited = std::unordered_set<std::string>;
 
-result find_best(const std::string &start, const std::string &end,
-                 const assets &lookup, visited &v) {
+result find_best(const std::string& start,
+                 const std::string& end,
+                 const assets& lookup,
+                 visited& v) {
   auto it = lookup.find(start);
   if (v.find(start) != std::end(v) || it == std::end(lookup)) {
     return {};
@@ -40,8 +42,9 @@ result find_best(const std::string &start, const std::string &end,
   return global_result;
 }
 
-result find_best(const std::string &start, const std::string &end,
-                 const assets &lookup) {
+result find_best(const std::string& start,
+                 const std::string& end,
+                 const assets& lookup) {
   auto v = visited{};
   return find_best(start, end, amount, lookup, v);
 }
@@ -55,10 +58,10 @@ int main() {
       {"W", {{"U", 2}}},
   };
 
-  auto print = [](const auto &r) {
+  auto print = [](const auto& r) {
     std::cout << "Rate: " << std::to_string(r.rate) << std::endl;
     std::cout << "Path: ";
-    for (const auto &p : r.path) {
+    for (const auto& p : r.path) {
       std::cout << p << " -> ";
     }
     std::cout << std::endl;

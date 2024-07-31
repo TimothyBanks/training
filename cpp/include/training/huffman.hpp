@@ -1,7 +1,7 @@
 #include <string>
 
 namespace huffman {
-bool huffman(const std::string &s) {
+bool huffman(const std::string& s) {
   if (s.empty()) {
     return false;
   }
@@ -28,7 +28,7 @@ void run_test() {
   // “aaabbcc” -> “a3b2c2” : True
   // “aaabcaa” -> “a3b1c1a2” : False
 
-  auto test = [](const std::string &s) {
+  auto test = [](const std::string& s) {
     std::cout << s << " " << std::to_string(huffman(s)) << std::endl;
   };
 
@@ -40,8 +40,8 @@ void run_test() {
   test("aabbcc");
   test("z");
 }
-} // namespace tests
-} // namespace huffman
+}  // namespace tests
+}  // namespace huffman
 
 struct Owner {};
 
@@ -59,7 +59,7 @@ struct Robin : public Bird {};
 
 struct Appointment {
   timestamp time;
-  Pet *pet;
+  Pet* pet;
 };
 
 POST / base - url / <owner> / register -

@@ -12,7 +12,7 @@ struct Data {
   std::unordered_map<std::string, double> m_table;
   double m_threshold = 0.0;
 
-  double balance(const std::string &address) {
+  double balance(const std::string& address) {
     auto it = m_table.find(address);
     if (it == std::end(m_table)) {
       return 0.0;
@@ -20,7 +20,7 @@ struct Data {
     return it->second;
   }
 
-  void set_balance(const std::string &address, double amount) {
+  void set_balance(const std::string& address, double amount) {
     auto it = m_table.find(address);
     if (it == std::end(m_table)) {
       m_table.emplace(address, amount);
@@ -33,14 +33,14 @@ struct Data {
 
   void set_threshold(double threshold) { m_threshold = threshold; }
 
-  static Data &instance() {
+  static Data& instance() {
     static auto d = Data{};
     return d;
   }
 };
 
-inline void autoflush(const std::string &address_a,
-                      const std::string &address_b) {
+inline void autoflush(const std::string& address_a,
+                      const std::string& address_b) {
   auto balance_a = Data::instance().balance(address_a);
   auto balance_b = Data::instance().balance(address_b);
 
@@ -63,7 +63,7 @@ int main() {
   autoflush(address_a, address_b);
 
   auto print = []() {
-    for (const auto &p : Data::instance().m_table) {
+    for (const auto& p : Data::instance().m_table) {
       std::cout << p.first << ": " << p.second << std::endl;
     }
   };

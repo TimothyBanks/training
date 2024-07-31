@@ -33,22 +33,22 @@
 
 // void run_tree_tests()
 // {
-//   std::cout << "Running tree tests...\n"; 
-//   auto values = std::vector<char>{'F', 'B', 'G', 'A', 'D', '\0', 'I', '\0', '\0', 'C', 'E', 'H', '\0'};
-//   auto tree = training::tree<char>{values};
-//   auto print = [](auto& data) {
+//   std::cout << "Running tree tests...\n";
+//   auto values = std::vector<char>{'F', 'B', 'G', 'A', 'D', '\0', 'I', '\0',
+//   '\0', 'C', 'E', 'H', '\0'}; auto tree = training::tree<char>{values}; auto
+//   print = [](auto& data) {
 //     std::cout << data;
 //     return false;
 //   };
 //   std::cout << "Breadth First: ";
 //   tree.traverse(training::tree<char>::traversal::breadth_first, print);
 //   std::cout << "\nDepth First, Pre Order: ";
-//   tree.traverse(training::tree<char>::traversal::depth_first_pre_order, print);
-//   std::cout << "\nDepth First, In Order: ";
-//   tree.traverse(training::tree<char>::traversal::depth_first_in_order, print);
-//   std::cout << "\nDepth First, Post Order: ";
-//   tree.traverse(training::tree<char>::traversal::depth_first_post_order, print);
-//   std::cout << "\nFinished tree tests...\n";
+//   tree.traverse(training::tree<char>::traversal::depth_first_pre_order,
+//   print); std::cout << "\nDepth First, In Order: ";
+//   tree.traverse(training::tree<char>::traversal::depth_first_in_order,
+//   print); std::cout << "\nDepth First, Post Order: ";
+//   tree.traverse(training::tree<char>::traversal::depth_first_post_order,
+//   print); std::cout << "\nFinished tree tests...\n";
 // }
 
 // void run_fibonnaci_tests()
@@ -124,7 +124,7 @@
 //   std::cout << "Finished MergeSort tests...\n";
 // }
 
-// void run_moving_average_tests() 
+// void run_moving_average_tests()
 // {
 //   auto mv = training::moving_average{4};
 
@@ -133,7 +133,6 @@
 // }
 
 // #include <training/pinestreet.hpp>
-
 
 // int main (int argc, char *argv[])
 // {
@@ -151,7 +150,7 @@
 //   // pinestreet::tests::run_tests();
 //   // huffman::tests::run_test();
 
-//   // test_calculator();  
+//   // test_calculator();
 //   // run_bounded_buffer_test();
 
 //   // run_moving_average_tests();
@@ -172,8 +171,11 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
+#include <training/hash_map.hpp>
+#include <training/peque.hpp>
+#include <training/small_vector.hpp>
 #include <type_traits>
+#include <vector>
 
 template <typename T, typename Enable = void>
 struct less_;
@@ -183,189 +185,62 @@ struct greater_;
 
 template <typename T>
 struct less_<T, std::enable_if_t<std::is_integral_v<T>>> {
-  bool operator()(const T& l, const T& r) const {
-    return l < r;
-  }
+  bool operator()(const T& l, const T& r) const { return l < r; }
 };
-
 
 template <typename T>
 struct greater_<T, std::enable_if_t<std::is_integral_v<T>>> {
-  bool operator()(const T& l, const T& r) const {
-    return l > r;
-  }
+  bool operator()(const T& l, const T& r) const { return l > r; }
 };
 
-template <typename T, typename Compare>
-struct peque {
-  using type = T;
-  using compare = Compare;
+struct my_type {
+  uint32_t foo;
+  std::string bar;
 
-private:
-  std::vector<T> container;
+  my_type() = default;
+  my_type(const my_type&) = default;
+  my_type(my_type&&) = default;
+  my_type(uint32_t foo_, std::string bar_) : foo{foo_}, bar{std::move(bar_)} {}
 
-  void heapify_down(size_t index) {
-    auto target_index = index;
-    auto left = 2 * index + 1;
-    auto right = left + 1;
-
-    auto adjust = [&](auto index) {   
-      if (index < container.size() && compare{}(container[index], container[target_index])) {
-        target_index = index;
-      }
-    };
-
-    adjust(left);
-    adjust(right);
-
-    if (index != target_index) {
-      std::swap(container[index], container[target_index]);
-      heapify_down(target_index);
-    }
-    // else the item at index is correctly ordered.
-  }
-
-  void heapify_up(size_t index) {
-    while (index > 0) {
-      auto parent = (index - 1) / 2;
-      if (compare{}(container[index], container[parent])) {
-        std::swap(container[index], container[parent]);
-        index = parent;
-      } else {
-        return;
-      }
-    }
-  }
-
-public:
-  T& front() {
-    if (container.empty()) {
-      throw "empty peque";
-    }
-    return container.front();
-  }
-
-  const T& front() const {
-    if (container.empty()) {
-      throw "empty peque";
-    }
-    return container.front();
-  }
-
-  bool empty() const {
-    return container.empty();
-  }
-
-  void pop() {
-    if (container.empty()) {
-      return;
-    }
-
-    if (container.size() == 1) {
-      container.pop_back();
-      return;
-    }
-
-    std::swap(container[0], container[container.size() - 1]);
-    container.pop_back();
-
-    heapify_down(0);
-  }
-
-  void push(T value) {
-    container.push_back(std::move(value));
-    heapify_up(container.size() - 1);
-  }
+  my_type& operator=(const my_type&) = default;
+  my_type& operator=(my_type&&) = default;
 };
 
-template <typename T>
-struct my_vector {
-  using type = T;
+int main(int argc, char* argv[]) {
+  auto my_v = small_vector<my_type, 5>{};
 
-private:
-  size_t length{0};
-  size_t reserved{16};
-  std::unique_ptr<T[]> backing{new T[reserved]};
-
-public:
-  T& front() {
-    if (length == 0) {
-      throw "empty";
-    }
-    return backing.get()[0];
+  for (auto i = size_t{0}; i < 16; ++i) {
+    my_v.emplace_back(i, std::to_string(i));
   }
 
-  const T& front() const {
-    if (length == 0) {
-      throw "empty";
-    }
-    return backing.get()[0];
-  }
-
-  T& back() {
-    if (length == 0) {
-      throw "empty";
-    }
-    return backing.get()[length - 1];
-  }
-  
-  const T& back() const {
-    if (length == 0) {
-      throw "empty";
-    }
-    return backing.get()[length - 1];
-  }
-
-  T& at(size_t index) {
-    if (length == 0) {
-      throw "empty";
-    } 
-    if (index >= length) {
-      throw "out of bounds";
-    }
-    return backing.get()[index];
-  }
-  
-  const T& at(size_t index) const {
-    if (length == 0) {
-      throw "empty";
-    }
-    if (index >= length) {
-      throw "out of bounds";
-    }
-    return backing.get()[index];
-  }
-
-  size_t size() const { return length; }
-  bool is_empty() const { return length == 0; }
-
-  void push(T value) {
-    if (length + 1 >= reserved) {
-      reserved *= 2;
-      auto new_backing = std::unique_ptr<T[]>{new T[reserved]};
-      std::memcpy(new_backing.get(), backing.get(), length * sizeof(T));
-      backing = std::move(new_backing);
-    }
-
-    ++length;
-    backing.get()[length - 1] = std::move(value);
-  }
-};
-
-
-int main (int argc, char *argv[])
-{
-  auto my_v = my_vector<uint32_t>{};
-  for (auto i = size_t{0}; i < 73; ++i) {
-    my_v.push(i);
-  }
+  std::cout << my_v.size() << std::endl;
   for (auto i = size_t{0}; i < my_v.size(); ++i) {
-    std::cout << my_v.at(i) << std::endl;
+    auto& v = my_v[i];
+    std::cout << v.bar << ", " << v.foo << std::endl;
   }
-  std::cout << std::endl << std::endl;
 
+  std::cout << my_v.size() << std::endl;
+  while (!my_v.empty()) {
+    std::cout << my_v.size() << std::endl;
+    my_v.pop_back();
+  }
+  std::cout << my_v.size() << std::endl;
 
-  auto test_peque = [](auto compare) {  
+  auto my_hash = hash_map<uint64_t, uint64_t>{};
+  my_hash.insert(1, 20);
+  my_hash.insert(2, 21);
+  my_hash.insert(3, 22);
+  my_hash.insert(4, 23);
+  my_hash.insert(5, 24);
+  my_hash.insert(6, 25);
+  my_hash.insert(7, 26);
+  my_hash.insert(8, 27);
+  my_hash.insert(9, 28);
+  my_hash.insert(10, 29);
+  my_hash.insert(11, 30);
+  my_hash.print();
+
+  auto test_peque = [](auto compare) {
     std::cout << "Entering test..." << std::endl;
     auto p = peque<uint32_t, std::decay_t<decltype(compare)>>{};
     std::cout << "Pushing..." << std::endl;
@@ -396,34 +271,12 @@ int main (int argc, char *argv[])
 
   return 0;
 
-
   auto t = std::map<std::string, uint32_t>{
-    {"z", 0},
-    {"y", 0},
-    {"x", 0},
-    {"w", 0},
-    {"v", 0},
-    {"u", 0},
-    {"t", 0},
-    {"s", 0},
-    {"r", 0},
-    {"q", 0},
-    {"ddddddddd", 0},
-    {"o", 0},
-    {"n", 0},
-    {"m", 0},
-    {"l", 0},
-    {"k", 0},
-    {"aaaaaa", 0},
-    {"i", 0},
-    {"h", 0},
-    {"g", 0},
-    {"f", 0},
-    {"e", 0},
-    {"d", 0},
-    {"c", 0},
-    {"b", 0},
-    {"a", 0},
+      {"z", 0}, {"y", 0}, {"x", 0}, {"w", 0}, {"v", 0},         {"u", 0},
+      {"t", 0}, {"s", 0}, {"r", 0}, {"q", 0}, {"ddddddddd", 0}, {"o", 0},
+      {"n", 0}, {"m", 0}, {"l", 0}, {"k", 0}, {"aaaaaa", 0},    {"i", 0},
+      {"h", 0}, {"g", 0}, {"f", 0}, {"e", 0}, {"d", 0},         {"c", 0},
+      {"b", 0}, {"a", 0},
   };
 
   for (auto& it : t) {

@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-unsigned int trapped_water(const std::vector<unsigned int> &heights) {
+unsigned int trapped_water(const std::vector<unsigned int>& heights) {
   if (heights.empty()) {
     return 0;
   }

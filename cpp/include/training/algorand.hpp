@@ -23,7 +23,7 @@ class list {
     std::string data;
   };
 
-public:
+ public:
   void push(std::string data) {
     auto n = std::make_shared<node>(std::move(data));
     if (!m_head) {
@@ -73,7 +73,7 @@ public:
     return true;
   }
 
-private:
+ private:
   node_ptr m_head;
 };
 

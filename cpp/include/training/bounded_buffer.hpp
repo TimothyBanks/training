@@ -7,10 +7,11 @@
 #include <mutex>
 #include <thread>
 
-template <typename T, size_t N = 255> class bounded_buffer {
+template <typename T, size_t N = 255>
+class bounded_buffer {
   using type = T;
 
-public:
+ public:
   size_t size() const { return N; }
 
   void push(T t) {
@@ -32,7 +33,7 @@ public:
     return result;
   }
 
-private:
+ private:
   std::deque<T> m_buffer;
   std::mutex m_mutex;
   std::condition_variable m_not_full;
@@ -77,11 +78,11 @@ void run_bounded_buffer_test() {
         i);
   }
 
-  for (auto &consumer : consumers) {
+  for (auto& consumer : consumers) {
     consumer.join();
   }
 
-  for (auto &producer : producers) {
+  for (auto& producer : producers) {
     producer.join();
   }
 }

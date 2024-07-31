@@ -27,7 +27,7 @@ struct block {
 };
 
 class query {
-public:
+ public:
   std::tuple<uint32_t, block_header> query_block_header(size_t block_height) {
     auto it = m_blocks.find(block_height);
     if (it != std::end(m_blocks)) {
@@ -56,10 +56,10 @@ public:
     };
 
     while (current_block <= block_height) {
-      file_stream.read(reinterpret_cast<char *>(&magic_bytes),
+      file_stream.read(reinterpret_cast<char*>(&magic_bytes),
                        sizeof(magic_bytes));
       magic_bytes = swap_endian(magic_bytes);
-      file_stream.read(reinterpret_cast<char *>(&size), sizeof(size));
+      file_stream.read(reinterpret_cast<char*>(&size), sizeof(size));
       size = swap_endian(size);
 
       if (current_block == block_height) {
@@ -79,7 +79,7 @@ public:
     b.magic = magic_bytes;
     b.size = size;
 
-    file_stream.read(reinterpret_cast<char *>(&b.header), sizeof(b.header));
+    file_stream.read(reinterpret_cast<char*>(&b.header), sizeof(b.header));
     b.header.version = swap_endian(b.header.version);
     b.header.time = swap_endian(b.header.time);
     b.header.nBits = swap_endian(b.header.nBits);
@@ -93,21 +93,21 @@ public:
     return std::make_tuple(0, b.header);
   }
 
-  static query &instance() {
+  static query& instance() {
     static auto _instance = query{};
     return _instance;
   }
 
-protected:
+ protected:
   query() = default;
 
-private:
+ private:
   std::unordered_map<size_t, block> m_blocks;
 };
 
 namespace tests {
 void run_tests() {
-  auto print = [](const auto &height) {
+  auto print = [](const auto& height) {
     auto [result, b] = query::instance().query_block_header(height);
     std::cout << "Block Height " << std::to_string(height) << std::endl;
     std::cout << std::to_string(b.version) << std::endl;
@@ -138,6 +138,6 @@ void run_tests() {
   print(9999);
   print(10000);
 }
-} // namespace tests
+}  // namespace tests
 
-} // namespace pinestreet
+}  // namespace pinestreet

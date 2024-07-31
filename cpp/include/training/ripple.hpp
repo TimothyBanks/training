@@ -145,64 +145,67 @@
    T and U are never the same type.
    Can assume that T and U don't exist already in bi_map.
 */
-template <class T, class U> class bi_map {
-public:
+template <class T, class U>
+class bi_map {
+ public:
   using pair = std::pair<T, U>;
   using iterator = typename std::list<pair>::iterator;
   using const_iterator = typename std::list<pair>::const_iterator;
 
   bi_map() = default;
-  bi_map(const bi_map &bm);
-  bi_map(bi_map &&bm) = default;
+  bi_map(const bi_map& bm);
+  bi_map(bi_map&& bm) = default;
 
-  bi_map &operator=(const bi_map &bm);
-  bi_map &operator=(bi_map &&bm) = default;
+  bi_map& operator=(const bi_map& bm);
+  bi_map& operator=(bi_map&& bm) = default;
 
   // returns the number of elements
   std::size_t size() const;
 
-  void erase(T const &t);
-  void erase(U const &u);
+  void erase(T const& t);
+  void erase(U const& u);
 
   // insert a copy of the given pair
-  void insert(pair const &p);
+  void insert(pair const& p);
 
   const_iterator begin() const;
   const_iterator end() const;
 
-  const_iterator find(T const &t) const;
-  const_iterator find(U const &u) const;
+  const_iterator find(T const& t) const;
+  const_iterator find(U const& u) const;
 
-private:
+ private:
   static_assert(!std::is_same<T, U>::value, "T and U can not be the same type");
 
   struct compare {
-    template <class V> bool operator()(V const *x, V const *y) const {
+    template <class V>
+    bool operator()(V const* x, V const* y) const {
       return *x < *y;
     }
   };
 
-  std::map<T const *, iterator, compare> mapT_;
-  std::map<U const *, iterator, compare> mapU_;
+  std::map<T const*, iterator, compare> mapT_;
+  std::map<U const*, iterator, compare> mapU_;
   std::list<pair> list_;
 };
 
 template <class T, class U>
-std::ostream &operator<<(std::ostream &os, bi_map<T, U> const &m) {
-  for (const auto &p : m) {
+std::ostream& operator<<(std::ostream& os, bi_map<T, U> const& m) {
+  for (const auto& p : m) {
     os << p.first << ", " << p.second << std::endl;
   }
   return os;
 }
 
-template <class T, class U> bi_map<T, U>::bi_map(const bi_map &bm) {
-  for (const auto &p : bm.list_) {
+template <class T, class U>
+bi_map<T, U>::bi_map(const bi_map& bm) {
+  for (const auto& p : bm.list_) {
     insert(p);
   }
 }
 
 template <class T, class U>
-bi_map<T, U> &bi_map<T, U>::operator=(const bi_map &bm) {
+bi_map<T, U>& bi_map<T, U>::operator=(const bi_map& bm) {
   if (&bm == this) {
     return *this;
   }
@@ -211,14 +214,15 @@ bi_map<T, U> &bi_map<T, U>::operator=(const bi_map &bm) {
   mapT_.clear();
   mapU_.clear();
 
-  for (const auto &p : bm.list_) {
+  for (const auto& p : bm.list_) {
     insert(p);
   }
 
   return *this;
 }
 
-template <class T, class U> void bi_map<T, U>::erase(T const &t) {
+template <class T, class U>
+void bi_map<T, U>::erase(T const& t) {
   auto it = mapT_.find(&t);
   if (it != std::end(mapT_)) {
     auto it2 = mapU_.find(&it->second->second);
@@ -228,7 +232,8 @@ template <class T, class U> void bi_map<T, U>::erase(T const &t) {
   }
 }
 
-template <class T, class U> void bi_map<T, U>::erase(U const &u) {
+template <class T, class U>
+void bi_map<T, U>::erase(U const& u) {
   auto it = mapU_.find(&u);
   if (it != std::end(mapU_)) {
     auto it2 = mapT_.find(&it->second->first);
@@ -239,7 +244,7 @@ template <class T, class U> void bi_map<T, U>::erase(U const &u) {
 }
 
 template <class T, class U>
-typename bi_map<T, U>::const_iterator bi_map<T, U>::find(T const &t) const {
+typename bi_map<T, U>::const_iterator bi_map<T, U>::find(T const& t) const {
   auto it = mapT_.find(&t);
   if (it == std::end(mapT_)) {
     return std::end(list_);
@@ -248,7 +253,7 @@ typename bi_map<T, U>::const_iterator bi_map<T, U>::find(T const &t) const {
 }
 
 template <class T, class U>
-typename bi_map<T, U>::const_iterator bi_map<T, U>::find(U const &u) const {
+typename bi_map<T, U>::const_iterator bi_map<T, U>::find(U const& u) const {
   auto it = mapU_.find(&u);
   if (it == std::end(mapU_)) {
     return std::end(list_);
@@ -268,7 +273,8 @@ typename bi_map<T, U>::const_iterator bi_map<T, U>::end() const {
 
 // insert the pair
 // if either key already exists, undefined behavior
-template <class T, class U> void bi_map<T, U>::insert(pair const &p) {
+template <class T, class U>
+void bi_map<T, U>::insert(pair const& p) {
   // Implement this function.
   // Assume that neither key is already present.
   list_.emplace_back(p);
@@ -280,7 +286,8 @@ template <class T, class U> void bi_map<T, U>::insert(pair const &p) {
 
 // insert the pair
 // if either key already exists, undefined behavior
-template <class T, class U> std::size_t bi_map<T, U>::size() const {
+template <class T, class U>
+std::size_t bi_map<T, U>::size() const {
   // Implement this function.
   // Assume that neither key is already present.
   return list_.size();

@@ -1,27 +1,31 @@
 #include <unordered_map>
 
-#pragma GCC diagnostic push 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-enum-enum-conversion"
 #pragma GCC diagnostic ignored "-Wdeprecated-anon-enum-enum-conversion"
 
 namespace training {
 
 namespace details {
-template <uint64_t N> struct fibonacci {
+template <uint64_t N>
+struct fibonacci {
   enum : uint64_t { value = fibonacci<N - 1>::value + fibonacci<N - 2>::value };
 };
 
-template <> struct fibonacci<0> {
+template <>
+struct fibonacci<0> {
   enum : uint64_t { value = 0 };
 };
 
-template <> struct fibonacci<1> {
+template <>
+struct fibonacci<1> {
   enum : uint64_t { value = 1 };
 };
-} // namespace details
+}  // namespace details
 
 // static recursion
-template <uint64_t N> constexpr uint64_t fibonacci() {
+template <uint64_t N>
+constexpr uint64_t fibonacci() {
   return details::fibonacci<N>::value;
 }
 
@@ -39,7 +43,7 @@ uint64_t fibonacci2(uint64_t n) {
 }
 
 namespace details {
-uint64_t fibonacci3(uint64_t n, std::unordered_map<uint64_t, uint64_t> &cache) {
+uint64_t fibonacci3(uint64_t n, std::unordered_map<uint64_t, uint64_t>& cache) {
   if (n <= 1) {
     return n;
   }
@@ -54,7 +58,7 @@ uint64_t fibonacci3(uint64_t n, std::unordered_map<uint64_t, uint64_t> &cache) {
   }
   return cache[n - 1] + cache[n - 2];
 }
-} // namespace details
+}  // namespace details
 
 // dynamic programming version 1
 uint64_t fibonacci3(uint64_t n) {
@@ -81,7 +85,6 @@ uint64_t fibonacci(uint64_t n) {
   return n_1;
 }
 
-} // namespace training
-
+}  // namespace training
 
 #pragma GCC diagnostic pop

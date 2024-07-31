@@ -16,8 +16,9 @@
 #include <deque>
 #include <mutex>
 
-template <typename T, size_t Max_size> class buffer {
-public:
+template <typename T, size_t Max_size>
+class buffer {
+ public:
   void push(T item) {
     auto lock = std::unique_lock<std::mutex>{m_mutex};
     m_has_space.wait_for(lock, []() { return m_buffer.size() < Max_size; });
@@ -37,7 +38,7 @@ public:
     return result;
   }
 
-private:
+ private:
   std::deque<T> m_buffer;
   std::mutex m_mutex;
   std::condition_variable m_has_space;

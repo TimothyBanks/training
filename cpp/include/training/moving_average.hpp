@@ -3,7 +3,7 @@
 
 namespace training {
 class moving_average {
-public:
+ public:
   moving_average(size_t window) : m_window_size{window} {}
 
   void push(size_t n) {
@@ -15,7 +15,7 @@ public:
     m_sum += n;
   }
 
-  moving_average &operator()(size_t n) {
+  moving_average& operator()(size_t n) {
     push(n);
     return *this;
   }
@@ -24,9 +24,9 @@ public:
     return static_cast<double>(m_sum) / m_buffer.size();
   }
 
-private:
+ private:
   std::deque<size_t> m_buffer;
   size_t m_window_size{0};
   size_t m_sum{0};
 };
-} // namespace training
+}  // namespace training

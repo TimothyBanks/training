@@ -4,10 +4,12 @@ namespace training::sort {
 // Container c requires size() and indexer.
 
 struct bubble {
-  template <typename Container> static void sort(Container &c);
+  template <typename Container>
+  static void sort(Container& c);
 };
 
-template <typename Container> void bubble::sort(Container &c) {
+template <typename Container>
+void bubble::sort(Container& c) {
   if (c.size() <= 1) {
     return;
   }
@@ -25,10 +27,12 @@ template <typename Container> void bubble::sort(Container &c) {
 }
 
 struct selection {
-  template <typename Container> static void sort(Container &c);
+  template <typename Container>
+  static void sort(Container& c);
 };
 
-template <typename Container> void selection::sort(Container &c) {
+template <typename Container>
+void selection::sort(Container& c) {
   if (c.size() <= 1) {
     return;
   }
@@ -43,10 +47,12 @@ template <typename Container> void selection::sort(Container &c) {
 }
 
 struct insertion {
-  template <typename Container> static void sort(Container &c);
+  template <typename Container>
+  static void sort(Container& c);
 };
 
-template <typename Container> void insertion::sort(Container &c) {
+template <typename Container>
+void insertion::sort(Container& c) {
   if (c.size() <= 1) {
     return;
   }
@@ -62,7 +68,7 @@ template <typename Container> void insertion::sort(Container &c) {
 
 namespace details {
 template <typename Container>
-size_t partition(Container &c, int64_t start, int64_t end) {
+size_t partition(Container& c, int64_t start, int64_t end) {
   // quicksort uses a pivot value.  Based on that value
   // items within the container will be arranged in such a way
   // that items less than will be moved to the left of the container
@@ -80,8 +86,10 @@ size_t partition(Container &c, int64_t start, int64_t end) {
 }
 
 template <typename Container, typename Partition_functor>
-void quick_sort(Container &c, int64_t start, int64_t end,
-                const Partition_functor &p) {
+void quick_sort(Container& c,
+                int64_t start,
+                int64_t end,
+                const Partition_functor& p) {
   if (start >= end) {
     return;
   }
@@ -91,31 +99,35 @@ void quick_sort(Container &c, int64_t start, int64_t end,
   quick_sort(c, start, pivot - 1, p);
   quick_sort(c, pivot + 1, end, p);
 }
-} // namespace details
+}  // namespace details
 
 struct quick {
-  template <typename Container> static void sort(Container &c);
+  template <typename Container>
+  static void sort(Container& c);
 
   template <typename Container, typename Partition_functor>
-  static void sort(Container &c, const Partition_functor &p);
+  static void sort(Container& c, const Partition_functor& p);
 };
 
-template <typename Container> void quick::sort(Container &c) {
-  return sort(c, [](auto &con, auto start, auto end) {
+template <typename Container>
+void quick::sort(Container& c) {
+  return sort(c, [](auto& con, auto start, auto end) {
     return details::partition(con, start, end);
   });
 }
 
 template <typename Container, typename Partition_functor>
-void quick::sort(Container &c, const Partition_functor &p) {
+void quick::sort(Container& c, const Partition_functor& p) {
   details::quick_sort(c, 0, c.size() - 1, p);
 }
 
 struct merge {
-  template <typename Container> static void sort(Container &c);
+  template <typename Container>
+  static void sort(Container& c);
 };
 
-template <typename Container> void merge::sort(Container &c) {
+template <typename Container>
+void merge::sort(Container& c) {
   if (c.size() <= 1) {
     return;
   }
@@ -135,7 +147,7 @@ template <typename Container> void merge::sort(Container &c) {
       c[index++] = right[right_index++];
     }
   }
-  auto exhaust = [&](auto &partition, auto partition_index) {
+  auto exhaust = [&](auto& partition, auto partition_index) {
     while (partition_index < partition.size()) {
       c[index++] = partition[partition_index++];
     }
@@ -144,4 +156,4 @@ template <typename Container> void merge::sort(Container &c) {
   exhaust(right, right_index);
 }
 
-} // namespace training::sort
+}  // namespace training::sort

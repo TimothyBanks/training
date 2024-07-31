@@ -11,7 +11,7 @@
 #include <vector>
 
 template <typename Functor>
-void drain_until(std::stack<std::string> &s, Functor &&f) {
+void drain_until(std::stack<std::string>& s, Functor&& f) {
   auto keep_going = f(s);
   while (keep_going) {
     auto right_side = std::atoi(s.top().c_str());
@@ -30,14 +30,14 @@ void drain_until(std::stack<std::string> &s, Functor &&f) {
   }
 }
 
-int64_t evaluate(const std::vector<std::string> &tokens) {
+int64_t evaluate(const std::vector<std::string>& tokens) {
   auto s = std::stack<std::string>{};
 
   for (auto i = 0; i < tokens.size();) {
-    const auto &token = tokens[i];
+    const auto& token = tokens[i];
 
     if (token == ")") {
-      drain_until(s, [](auto &s) {
+      drain_until(s, [](auto& s) {
         auto peek = s.top();
         if (peek == "(") {
           s.pop();
@@ -64,20 +64,21 @@ int64_t evaluate(const std::vector<std::string> &tokens) {
     }
   }
 
-  drain_until(s, [](auto &s) { return s.size() > 1; });
+  drain_until(s, [](auto& s) { return s.size() > 1; });
 
   return std::atoi(s.top().c_str());
 }
 
-int64_t evaluate2(const std::vector<std::string> &tokens, size_t &start,
+int64_t evaluate2(const std::vector<std::string>& tokens,
+                  size_t& start,
                   bool short_circuit) {
   auto s = std::stack<std::string>{};
 
   for (; start < tokens.size();) {
-    const auto &token = tokens[start];
+    const auto& token = tokens[start];
 
     if (token == ")") {
-      drain_until(s, [](auto &s) {
+      drain_until(s, [](auto& s) {
         auto peek = s.top();
         if (peek == "(") {
           s.pop();
@@ -109,12 +110,12 @@ int64_t evaluate2(const std::vector<std::string> &tokens, size_t &start,
     }
   }
 
-  drain_until(s, [](auto &s) { return s.size() > 1; });
+  drain_until(s, [](auto& s) { return s.size() > 1; });
 
   return std::atoi(s.top().c_str());
 }
 
-int64_t evaluate2(const std::vector<std::string> &tokens) {
+int64_t evaluate2(const std::vector<std::string>& tokens) {
   auto start = size_t{0};
   return evaluate2(tokens, start, false);
 }

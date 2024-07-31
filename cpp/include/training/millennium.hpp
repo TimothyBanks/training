@@ -201,7 +201,7 @@ std::string decode(const std::string_view& s) {
         count = (count * 10) + (s[++i] - '0');
       }
       counts.push(count);
-    } else if(s[i] == '[') {
+    } else if (s[i] == '[') {
       chunks.emplace();
     } else if (s[i] == ']') {
       auto chunk = chunks.top();
@@ -221,10 +221,10 @@ std::string decode(const std::string_view& s) {
 // Implement a hash map using smart pointers
 template <typename Key, typename Value>
 struct hash_map {
-  using key_type   = Key;
+  using key_type = Key;
   using value_type = Value;
 
-protected:
+ protected:
   struct node {
     node(key_type k_, value_type v_) : k{std::move(k_)}, v{std::move(v_)} {}
 
@@ -234,7 +234,7 @@ protected:
   };
   using node_ptr = std::unique_ptr<node>;
 
-  size_t node_count   = 0;
+  size_t node_count = 0;
   size_t bucket_count = 10;
   std::vector<node_ptr> buckets{bucket_count};
 
@@ -248,14 +248,14 @@ protected:
       return;
     }
 
-    auto current   = ptr;
+    auto current = ptr;
     node* previous = nullptr;
     while (current) {
       if (f(current, previous)) {
         return;
       }
       previous = current;
-      current  = current->next.get();
+      current = current->next.get();
     }
   }
 
@@ -274,7 +274,7 @@ protected:
 
     node* insertion_point = nullptr;
     auto found = false;
-    for_each(root.get(), [&](auto current, auto previous){
+    for_each(root.get(), [&](auto current, auto previous) {
       insertion_point = current;
       if (current->k == ptr->k) {
         found = true;
@@ -318,7 +318,7 @@ protected:
     }
   }
 
-public:
+ public:
   bool insert(key_type k, value_type v) {
     auto result = insert(std::make_unique<node>(std::move(k), std::move(v)));
     if (node_count == bucket_count) {
@@ -335,7 +335,7 @@ public:
       return;
     }
 
-    for_each(root.get(), [&](auto current, auto previous){
+    for_each(root.get(), [&](auto current, auto previous) {
       if (current->k != k) {
         return false;
       }
@@ -354,8 +354,8 @@ public:
     auto index = hash(k);
 
     auto& root = buckets[index];
-    node* ptr  = nullptr;
-    for_each(root.get(), [&](auto current, auto previous){
+    node* ptr = nullptr;
+    for_each(root.get(), [&](auto current, auto previous) {
       if (current->k != k) {
         return false;
       }
@@ -368,25 +368,27 @@ public:
     }
     return ptr->v;
   }
-
 };
 
-template <class... Ts> struct overloaded : Ts... {
+template <class... Ts>
+struct overloaded : Ts... {
   using Ts::operator()...;
 };
-template <class... Ts> overloaded(Ts...) -> overloaded<Ts...>;
+template <class... Ts>
+overloaded(Ts...) -> overloaded<Ts...>;
 
 enum class traversal_type {
   breadth,
-  pre_order, // node, left, right
-  in_order,  // left, node, right
-  post_order // left, right, node
+  pre_order,  // node, left, right
+  in_order,   // left, node, right
+  post_order  // left, right, node
 };
 
-template <typename Value> struct tree {
+template <typename Value>
+struct tree {
   using value_type = Value;
 
-private:
+ private:
   struct node {
     node() = default;
     node(value_type v_) : v{std::move(v_)} {}
@@ -399,7 +401,8 @@ private:
   node_ptr root;
 
   // TODO:  Look at how this is done using coroutines!!!!!!
-  template <typename Functor> void breadth_first(Functor f) {
+  template <typename Functor>
+  void breadth_first(Functor f) {
     if (!root) {
       return;
     }
@@ -425,12 +428,13 @@ private:
     }
   }
 
-  template <typename Functor> void pre_order(Functor f) {
+  template <typename Functor>
+  void pre_order(Functor f) {
     if (!root) {
       return;
     }
 
-    auto s       = std::stack<node_ptr>{};
+    auto s = std::stack<node_ptr>{};
     auto current = root;
 
     while (current || !s.empty()) {
@@ -450,12 +454,13 @@ private:
     }
   }
 
-  template <typename Functor> void in_order(Functor f) {
+  template <typename Functor>
+  void in_order(Functor f) {
     if (!root) {
       return;
     }
 
-    auto s       = std::stack<node_ptr>{};
+    auto s = std::stack<node_ptr>{};
     auto current = root;
 
     while (current || !s.empty()) {
@@ -473,13 +478,14 @@ private:
     }
   }
 
-  template <typename Functor> void post_order(Functor f) {
+  template <typename Functor>
+  void post_order(Functor f) {
     if (!root) {
       return;
     }
 
-    auto s                = std::stack<node_ptr>{};
-    auto current          = root;
+    auto s = std::stack<node_ptr>{};
+    auto current = root;
     node_ptr last_visited = nullptr;
 
     while (current || !s.empty()) {
@@ -501,63 +507,67 @@ private:
     }
   }
 
-public:
-  template <typename Functor> void visit(traversal_type traversal, Functor f) {
+ public:
+  template <typename Functor>
+  void visit(traversal_type traversal, Functor f) {
     switch (traversal) {
-    case traversal_type::breadth:
-      breadth_first(std::move(f));
-      break;
-    case traversal_type::pre_order:
-      pre_order(std::move(f));
-      break;
-    case traversal_type::in_order:
-      in_order(std::move(f));
-      break;
-    case traversal_type::post_order:
-      post_order(std::move(f));
-      break;
+      case traversal_type::breadth:
+        breadth_first(std::move(f));
+        break;
+      case traversal_type::pre_order:
+        pre_order(std::move(f));
+        break;
+      case traversal_type::in_order:
+        in_order(std::move(f));
+        break;
+      case traversal_type::post_order:
+        post_order(std::move(f));
+        break;
     };
   };
 
   static tree<Value> construct(
-      const std::vector<std::variant<std::monostate, value_type>> &items) {
-      if (items.empty()) {
-        return {};
+      const std::vector<std::variant<std::monostate, value_type>>& items) {
+    if (items.empty()) {
+      return {};
+    }
+
+    auto create = [](const auto& item) {
+      return std::visit(
+          overloaded{[](std::monostate) { return std::shared_ptr<node>{}; },
+                     [](value_type v) {
+                       return std::make_shared<node>(std::move(v));
+                     }},
+          item);
+    };
+
+    auto nodes = std::queue<node_ptr>{};
+    auto t = tree<Value>{};
+    t.root = create(items[0]);
+    nodes.push(t.root);
+
+    for (auto i = size_t{1}; i < items.size(); i += 2) {
+      auto parent = nodes.front();
+      nodes.pop();
+
+      parent->left = create(items[i]);
+      parent->right = create(items[i + 1]);
+
+      if (parent->left) {
+        nodes.push(parent->left);
       }
-
-      auto create = [](const auto& item) {
-        return std::visit(overloaded{
-          [](std::monostate) { return std::shared_ptr<node>{}; },
-          [](value_type v) { return std::make_shared<node>(std::move(v)); }
-        }, item);
-      };
-
-      auto nodes = std::queue<node_ptr>{};
-      auto t     = tree<Value>{};
-      t.root     = create(items[0]);
-      nodes.push(t.root);
-
-      for (auto i = size_t{1}; i < items.size(); i+=2) {
-        auto parent = nodes.front();
-        nodes.pop();
-
-        parent->left  = create(items[i]);
-        parent->right = create(items[i + 1]);
-
-        if (parent->left) {
-          nodes.push(parent->left);
-        }
-        if (parent->right) {
-          nodes.push(parent->right);
-        }
+      if (parent->right) {
+        nodes.push(parent->right);
       }
+    }
 
-      return t;
+    return t;
   }
 };
 
-template <typename T> struct sort {
-  static std::vector<T> bubble(const std::vector<T> &v) {
+template <typename T>
+struct sort {
+  static std::vector<T> bubble(const std::vector<T>& v) {
     auto result = v;
 
     if (v.empty()) {
@@ -580,7 +590,7 @@ template <typename T> struct sort {
     return result;
   }
 
-  static std::vector<T> selection(const std::vector<T> &v) {
+  static std::vector<T> selection(const std::vector<T>& v) {
     auto result = v;
 
     if (v.empty()) {
@@ -598,7 +608,7 @@ template <typename T> struct sort {
     return result;
   }
 
-  static std::vector<T> insertion(const std::vector<T> &v) {
+  static std::vector<T> insertion(const std::vector<T>& v) {
     auto result = v;
 
     for (auto i = size_t{1}; i < result.size(); ++i) {
@@ -615,7 +625,7 @@ template <typename T> struct sort {
   static std::vector<T> merge(const std::vector<T>& v) {
     if (v.size() < 2) {
       return v;
-    } 
+    }
 
     auto mid = v.size() / 2;
     auto left = merge({std::begin(v), std::begin(v) + mid});
@@ -631,20 +641,20 @@ template <typename T> struct sort {
       } else {
         result.push_back(right[ri++]);
       }
-    }    
+    }
 
-    while (li < left.size() ) {
+    while (li < left.size()) {
       result.push_back(left[li++]);
-    }    
+    }
 
-    while (ri < right.size() ) {
+    while (ri < right.size()) {
       result.push_back(right[ri++]);
     }
 
     return result;
   }
 
-  static void quick(std::vector<T> &v, int64_t begin, int64_t end) {
+  static void quick(std::vector<T>& v, int64_t begin, int64_t end) {
     if (begin >= end) {
       return;
     }
@@ -658,64 +668,58 @@ template <typename T> struct sort {
       }
       // Move the element at end to its final position
       std::swap(v[start], v[end]);
-      return start; // Return the pivot.
+      return start;  // Return the pivot.
     };
     auto pivot = partition();
     quick(v, begin, pivot - 1);
     quick(v, pivot + 1, end);
   }
 
-  static std::vector<T> quick(const std::vector<T> &v) {
+  static std::vector<T> quick(const std::vector<T>& v) {
     auto result = v;
     quick(result, 0, result.size() - 1);
     return result;
   }
 };
 
-class Base
-{
-    using print_callback = std::function<void(void)>;
-    
-public:
-    Base() : print_{[this]() { 
-        ++this->size_;
-        std::cout << "Base" << std::endl; 
-        std::cout << "size_: " << size_ << std::endl;
-    }}
-    {}
+class Base {
+  using print_callback = std::function<void(void)>;
 
-    void print() const 
-    {
-        print_();
-    }
-    
-protected:
-    print_callback print_;
-    std::size_t size_{1};
+ public:
+  Base()
+      : print_{[this]() {
+          ++this->size_;
+          std::cout << "Base" << std::endl;
+          std::cout << "size_: " << size_ << std::endl;
+        }} {}
+
+  void print() const { print_(); }
+
+ protected:
+  print_callback print_;
+  std::size_t size_{1};
 };
 
-class Derived : public Base
-{
-public:
-    Derived() : Base() {
-        auto base_version = print_;
-        print_ = [this, base_version](){ 
-            base_version(); 
-            ++this->extraSize_;
-            std::cout << "Derived" << std::endl; 
-            std::cout << "extraSize_: " << extraSize_ << std::endl;
-        };
-    }
-    
-    std::size_t extraSize_{2};
+class Derived : public Base {
+ public:
+  Derived() : Base() {
+    auto base_version = print_;
+    print_ = [this, base_version]() {
+      base_version();
+      ++this->extraSize_;
+      std::cout << "Derived" << std::endl;
+      std::cout << "extraSize_: " << extraSize_ << std::endl;
+    };
+  }
+
+  std::size_t extraSize_{2};
 };
 
-class DerivedDerived : public Derived
-{
-public:
-    DerivedDerived() : Derived() {
-        print_ = [](){ std::cout << "DerivedDerived" << std::endl; };
-    }
+class DerivedDerived : public Derived {
+ public:
+  DerivedDerived() : Derived() {
+    print_ = []() { std::cout << "DerivedDerived" << std::endl; };
+  }
 };
 
 namespace tests {
@@ -723,13 +727,13 @@ void run_tests() {
   //   Base* b = new Base;
   //   const Base* b2 = b;
   //   b2->print();
-    
+
   //   const Derived* de = new Derived;
   //   de->print();
-    
+
   //   const DerivedDerived* dd = new DerivedDerived;
   //   dd->print();
-    
+
   //   const Base* bd = new Derived;
   //   bd->print();
   // return;
@@ -744,12 +748,12 @@ void run_tests() {
   std::cout << d << std::endl;
 
   // prove that char* is the key in std::unordered_map<char*, ...>
-  auto m = std::unordered_map<const char *, int>{};
+  auto m = std::unordered_map<const char*, int>{};
   auto key1 = std::string{"abc"};
   auto key2 = std::string{"abc"};
   m.emplace(key1.c_str(), 1);
   m.emplace(key2.c_str(), 2);
-  for (const auto &[k, v] : m) {
+  for (const auto& [k, v] : m) {
     std::cout << k << " " << v << std::endl;
   }
 
@@ -777,7 +781,7 @@ void run_tests() {
                                          {"E"},
                                          {"H"},
                                          {std::monostate{}}});
-  auto print = [](auto &v) {
+  auto print = [](auto& v) {
     std::cout << v << ",";
     return false;
   };
@@ -794,8 +798,8 @@ void run_tests() {
   t.visit(traversal_type::post_order, print);
   std::cout << std::endl;
 
-  auto print_array = [](const auto &v) {
-    for (const auto &i : v) {
+  auto print_array = [](const auto& v) {
+    for (const auto& i : v) {
       std::cout << i << ",";
     }
   };
@@ -815,38 +819,38 @@ void run_tests() {
   print_array(sort<uint32_t>::quick({9, 7, 5, 3, 1, 2, 4, 6, 8, 0}));
   std::cout << std::endl;
 }
-} // namespace tests
+}  // namespace tests
 
-} // namespace millennium
+}  // namespace millennium
 
 // Actual first round interview question
 /*
+#include <algorithm>
 #include <cmath>
 #include <cstdio>
-#include <vector>
-#include <iostream>
-#include <algorithm>
 #include <functional>
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
 class Base
 {
     using print_callback = std::function<void(void)>;
-    
+
 public:
-    Base() : print_{[&]() { 
+    Base() : print_{[&]() {
         ++size_;
-        std::cout << "Base" << std::endl; 
+        std::cout << "Base" << std::endl;
         std::cout << "size_: " << size_ << std::endl;
     }}
     {}
 
-    void print() const 
+    void print() const
     {
         print_();
     }
-    
+
 protected:
     print_callback print_;
     std::size_t size_{1};
@@ -857,14 +861,14 @@ class Derived : public Base
 public:
     Derived() : Base() {
         auto base_version = print_;
-        print_ = [&](){ 
-            base_version(); 
+        print_ = [&](){
+            base_version();
             ++extraSize_;
-            std::cout << "Derived" << std::endl; 
+            std::cout << "Derived" << std::endl;
             std::cout << "extraSize_: " << extraSize_ << std::endl;
         };
     }
-    
+
     std::size_t extraSize_{2};
 };
 
@@ -884,56 +888,56 @@ int main() {
     Base* b = new Base;
     const Base* b2 = b;
     b2->print();
-    
+
     const Derived* d = new Derived;
     d->print();
-    
+
     const DerivedDerived* dd = new DerivedDerived;
     dd->print();
-    
+
     const Base* bd = new Derived;
     bd->print();
-        
+
 
     return 0;
 }
 
 */
 
-
-
 /*
 Blockchain consensus algorithms
 
 PoW (Proof of Work)
-1.  Nodes solve an computational problem based on a series of transactions 
-they have choosen to be included within the block.  The first node that 
-solves this problem (normally it is generating a block hash that is less than some number)
-gets to proposed the block to be added to the network.
+1.  Nodes solve an computational problem based on a series of transactions
+they have choosen to be included within the block.  The first node that
+solves this problem (normally it is generating a block hash that is less than
+some number) gets to proposed the block to be added to the network.
 2.  The proposed block will be sent to the other nodes for verification.
-This verification may include verifying the transactions in it are valid and signed, 
-the previous block hash is correct, the proof of work is correct, the timestamp is 
-greater than the previous block, verifies the merkle tree of the transactions within the
-block to make sure transactions have not been tampered with, etc.
-3.  Once the block has been verified, it will be added to the local state and propogated
-to the rest of the network.
-4.  There may temporarily be multiple forks on each node during the mining and verification chain.
-The longest chain wins.
+This verification may include verifying the transactions in it are valid and
+signed, the previous block hash is correct, the proof of work is correct, the
+timestamp is greater than the previous block, verifies the merkle tree of the
+transactions within the block to make sure transactions have not been tampered
+with, etc.
+3.  Once the block has been verified, it will be added to the local state and
+propogated to the rest of the network.
+4.  There may temporarily be multiple forks on each node during the mining and
+verification chain. The longest chain wins.
 
 PoS
-1.  Nodes stake some assets into the network and then they are randomly selected to produced blocks
-based on the size of their stake.
-2.  The selected node will gather the transactions they want to include within the block and broadcast
-the block to the network.
-3.  Other validator nodes will validate the new block and if a quorum of validators approve the block it 
-is added to the network.
-4.  These networks can also have local temporary forks and will use some sort of algorithm for determiningg
-the correct fork.
+1.  Nodes stake some assets into the network and then they are randomly selected
+to produced blocks based on the size of their stake.
+2.  The selected node will gather the transactions they want to include within
+the block and broadcast the block to the network.
+3.  Other validator nodes will validate the new block and if a quorum of
+validators approve the block it is added to the network.
+4.  These networks can also have local temporary forks and will use some sort of
+algorithm for determiningg the correct fork.
 
 DPoS
-1.  Nodes stake some assets into the network and then vote for a small number of validators to produce
-and validate blocks on behalf of the network.
-2.  Each elected validator take a turn at producing blocks in a predefined order.  If a validator fails 
-to produce a block, the next validator in order will take over.
-DPoS has a higher efficiency (given the smaller number of validators) and faster block times than PoS.
+1.  Nodes stake some assets into the network and then vote for a small number of
+validators to produce and validate blocks on behalf of the network.
+2.  Each elected validator take a turn at producing blocks in a predefined
+order.  If a validator fails to produce a block, the next validator in order
+will take over. DPoS has a higher efficiency (given the smaller number of
+validators) and faster block times than PoS.
 */

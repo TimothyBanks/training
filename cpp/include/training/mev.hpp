@@ -11,7 +11,7 @@ struct transaction {
 
 namespace details {
 namespace tabulation {
-uint64_t calculate_mev(const std::vector<transaction> &transactions,
+uint64_t calculate_mev(const std::vector<transaction>& transactions,
                        uint64_t block_gas_limit) {
   auto table = std::vector<std::vector<uint64_t>>(
       transactions.size() + 1, std::vector<uint64_t>(block_gas_limit + 1, 0));
@@ -38,12 +38,14 @@ uint64_t calculate_mev(const std::vector<transaction> &transactions,
 
   return table[transactions.size()][block_gas_limit];
 }
-} // namespace tabulation
+}  // namespace tabulation
 
 namespace recursive {
-uint64_t calculate_mev(const std::vector<transaction> &transactions,
-                       uint64_t block_gas_limit, size_t i,
-                       uint64_t current_reward, uint64_t used_gas) {
+uint64_t calculate_mev(const std::vector<transaction>& transactions,
+                       uint64_t block_gas_limit,
+                       size_t i,
+                       uint64_t current_reward,
+                       uint64_t used_gas) {
   if (i > transactions.size()) {
     return current_reward;
   }
@@ -69,14 +71,14 @@ uint64_t calculate_mev(const std::vector<transaction> &transactions,
   }
   return max_reward;
 }
-} // namespace recursive
-} // namespace details
+}  // namespace recursive
+}  // namespace details
 
-uint64_t calculate_mev(const std::vector<transaction> &transactions,
+uint64_t calculate_mev(const std::vector<transaction>& transactions,
                        uint64_t block_gas_limit) {
   return details::tabulation::calculate_mev(transactions, block_gas_limit);
   // return details::recursive::calculate_mev(transactions, block_gas_limit, 0,
   // 0, 0);
 }
 
-} // namespace bullish
+}  // namespace bullish

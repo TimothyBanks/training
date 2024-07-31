@@ -13,25 +13,26 @@ namespace dapperlabs {
 
 using block = std::string;
 
-template <typename T> struct range {
+template <typename T>
+struct range {
   T min{std::numeric_limits<T>::min()};
   T max{std::numeric_limits<T>::max()};
 };
 
 class range_response_processor {
-  using confirmed_block_functor = std::function<void(uint64_t, const block &)>;
+  using confirmed_block_functor = std::function<void(uint64_t, const block&)>;
   using block_confirmations =
       std::unordered_map<block, std::shared_ptr<std::atomic<uint64_t>>>;
 
-public:
+ public:
   range_response_processor(uint64_t confirmation_threshold,
-                           confirmed_block_functor &&confirmation_functor)
+                           confirmed_block_functor&& confirmation_functor)
       : m_confirmation_threshold{confirmation_threshold},
         m_confirmed_block_functor{
             std::forward<confirmed_block_functor>(confirmation_functor)} {}
 
-  auto process_range(uint64_t start_height,
-                     const std::vector<block> &blocks) -> void {
+  auto process_range(uint64_t start_height, const std::vector<block>& blocks)
+      -> void {
     auto is_confirmed = [&](auto block_height) {
       auto lock = std::shared_lock{m_confirmed_mutex};
       return m_confirmed_blocks.find(block_height) !=
@@ -40,7 +41,7 @@ public:
 
     for (auto block_height = start_height;
          block_height < start_height + blocks.size(); ++block_height) {
-      auto &current_block = blocks[block_height - start_height];
+      auto& current_block = blocks[block_height - start_height];
 
       if (is_confirmed(block_height)) {
         // block at this block_height has already been confirmed.
@@ -137,7 +138,7 @@ public:
     return {.min = min, .max = max};
   }
 
-private:
+ private:
   uint64_t m_confirmation_threshold{0};
   confirmed_block_functor m_confirmed_block_functor;
   std::shared_mutex m_confirmed_mutex;
@@ -146,4 +147,4 @@ private:
   std::unordered_map<uint64_t, block_confirmations> m_active_blocks;
 };
 
-} // namespace dapperlabs
+}  // namespace dapperlabs

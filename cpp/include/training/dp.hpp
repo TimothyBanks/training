@@ -15,8 +15,10 @@ namespace details {
   https://www.geeksforgeeks.org/longest-common-subsequence-dp-4/?ref=lbp
 */
 template <typename T>
-int32_t brute_force(const std::vector<T> &left, size_t lend,
-                    const std::vector<T> &right, size_t rend) {
+int32_t brute_force(const std::vector<T>& left,
+                    size_t lend,
+                    const std::vector<T>& right,
+                    size_t rend) {
   if (lend == 0 || rend == 0) {
     return 0;
   } else if (left[lend - 1] == right[rend - 1]) {
@@ -30,9 +32,11 @@ int32_t brute_force(const std::vector<T> &left, size_t lend,
 using lookup_table =
     std::unordered_map<size_t, std::unordered_map<size_t, int32_t>>;
 template <typename T>
-int32_t memoization(const std::vector<T> &left, size_t lend,
-                    const std::vector<T> &right, size_t rend,
-                    lookup_table &table) {
+int32_t memoization(const std::vector<T>& left,
+                    size_t lend,
+                    const std::vector<T>& right,
+                    size_t rend,
+                    lookup_table& table) {
   if (lend == 0 || rend == 0) {
     return 0;
   }
@@ -57,7 +61,7 @@ int32_t memoization(const std::vector<T> &left, size_t lend,
 }
 
 template <typename T>
-int32_t bottom_up(const std::vector<T> &left, const std::vector<T> &right) {
+int32_t bottom_up(const std::vector<T>& left, const std::vector<T>& right) {
   auto lookup = lookup_table{};
 
   for (size_t l = 0; l <= left.size(); ++l) {
@@ -76,30 +80,32 @@ int32_t bottom_up(const std::vector<T> &left, const std::vector<T> &right) {
 
   return lookup[left.size()][right.size()];
 }
-} // namespace details
+}  // namespace details
 
 template <typename T>
-int32_t solve(solve_by by, const std::vector<T> &left,
-              const std::vector<T> &right) {
+int32_t solve(solve_by by,
+              const std::vector<T>& left,
+              const std::vector<T>& right) {
   switch (by) {
-  case solve_by::brute_force:
-    return details::brute_force(left, left.size(), right, right.size());
-  case solve_by::bottom_up:
-    return details::bottom_up(left, right);
-  case solve_by::memoization: {
-    auto lookup = details::lookup_table{};
-    return details::memoization(left, left.size(), right, right.size(), lookup);
-  } break;
+    case solve_by::brute_force:
+      return details::brute_force(left, left.size(), right, right.size());
+    case solve_by::bottom_up:
+      return details::bottom_up(left, right);
+    case solve_by::memoization: {
+      auto lookup = details::lookup_table{};
+      return details::memoization(left, left.size(), right, right.size(),
+                                  lookup);
+    } break;
   }
   throw "invalid solve_by";
 }
-} // namespace longest_common_subsequence
+}  // namespace longest_common_subsequence
 
 namespace longest_increasing_subsequence {
 /* https://www.geeksforgeeks.org/longest-increasing-subsequence-dp-3/?ref=lbp */
 namespace details {
 template <typename T>
-int32_t brute_force(const std::vector<T> &v, size_t index) {
+int32_t brute_force(const std::vector<T>& v, size_t index) {
   if (index == 0) {
     return 1;
   }
@@ -115,8 +121,9 @@ int32_t brute_force(const std::vector<T> &v, size_t index) {
 
 using lookup_table = std::unordered_map<size_t, int32_t>;
 template <typename T>
-int32_t memoization(const std::vector<T> &v, size_t index,
-                    lookup_table &lookup) {
+int32_t memoization(const std::vector<T>& v,
+                    size_t index,
+                    lookup_table& lookup) {
   if (index == 0) {
     return 1;
   }
@@ -137,7 +144,8 @@ int32_t memoization(const std::vector<T> &v, size_t index,
   return max_count;
 }
 
-template <typename T> int32_t bottom_up(const std::vector<T> &v) {
+template <typename T>
+int32_t bottom_up(const std::vector<T>& v) {
   auto lookup = std::vector<int32_t>(v.size(), 0);
   lookup[0] = 1;
   auto max = int32_t{1};
@@ -152,36 +160,37 @@ template <typename T> int32_t bottom_up(const std::vector<T> &v) {
   }
   return max;
 }
-} // namespace details
+}  // namespace details
 
-template <typename T> int32_t solve(solve_by by, const std::vector<T> &v) {
+template <typename T>
+int32_t solve(solve_by by, const std::vector<T>& v) {
   switch (by) {
-  case solve_by::brute_force:
-    return details::brute_force(v, v.size() - 1);
-  case solve_by::bottom_up:
-    return details::bottom_up(v);
-  case solve_by::memoization: {
-    auto lookup = details::lookup_table{};
-    return details::memoization(v, v.size() - 1, lookup);
-  } break;
+    case solve_by::brute_force:
+      return details::brute_force(v, v.size() - 1);
+    case solve_by::bottom_up:
+      return details::bottom_up(v);
+    case solve_by::memoization: {
+      auto lookup = details::lookup_table{};
+      return details::memoization(v, v.size() - 1, lookup);
+    } break;
   }
   throw "invalid solve_by";
 }
-} // namespace longest_increasing_subsequence
+}  // namespace longest_increasing_subsequence
 
 namespace make_coins {
 /* https://leetcode.com/problems/coin-change/ */
 
 namespace details {
 template <typename T>
-int32_t brute_force(const std::vector<T> &coins, size_t index, T amount) {
+int32_t brute_force(const std::vector<T>& coins, size_t index, T amount) {
   if (amount == 0) {
     return 0;
   }
 
   auto min_count = std::numeric_limits<int32_t>::max();
   for (auto i = index; i < coins.size(); ++i) {
-    auto &coin = coins[i];
+    auto& coin = coins[i];
     if (amount < coin) {
       continue;
     }
@@ -195,8 +204,10 @@ int32_t brute_force(const std::vector<T> &coins, size_t index, T amount) {
 
 using lookup_table = std::unordered_map<size_t, int32_t>;
 template <typename T>
-int32_t memoization(const std::vector<T> &coins, size_t index, T amount,
-                    lookup_table &table) {
+int32_t memoization(const std::vector<T>& coins,
+                    size_t index,
+                    T amount,
+                    lookup_table& table) {
   if (amount == 0) {
     return 0;
   }
@@ -208,7 +219,7 @@ int32_t memoization(const std::vector<T> &coins, size_t index, T amount,
 
   auto min_count = std::numeric_limits<int32_t>::max();
   for (auto i = index; i < coins.size(); ++i) {
-    auto &coin = coins[i];
+    auto& coin = coins[i];
     if (amount < coin) {
       continue;
     }
@@ -221,13 +232,14 @@ int32_t memoization(const std::vector<T> &coins, size_t index, T amount,
   return min_count == std::numeric_limits<int32_t>::max() ? -1 : min_count;
 }
 
-template <typename T> int32_t bottom_up(const std::vector<T> &coins, T amount) {
+template <typename T>
+int32_t bottom_up(const std::vector<T>& coins, T amount) {
   auto table = std::vector<T>(amount + 1, std::numeric_limits<T>::max());
   table[0] = 0;
 
   for (T i = 1; i <= amount; ++i) {
     for (size_t j = 0; j < coins.size(); ++j) {
-      auto &coin = coins[j];
+      auto& coin = coins[j];
       if (i < coin) {
         continue;
       }
@@ -237,23 +249,23 @@ template <typename T> int32_t bottom_up(const std::vector<T> &coins, T amount) {
 
   return table[amount] > amount ? -1 : table[amount];
 }
-} // namespace details
+}  // namespace details
 
 template <typename T>
-int32_t solve(solve_by by, const std::vector<T> &coins, T amount) {
+int32_t solve(solve_by by, const std::vector<T>& coins, T amount) {
   switch (by) {
-  case solve_by::brute_force:
-    return details::brute_force(coins, 0, amount);
-  case solve_by::bottom_up:
-    return details::bottom_up(coins, amount);
-  case solve_by::memoization: {
-    auto lookup = details::lookup_table{};
-    return details::memoization(coins, 0, amount, lookup);
-  } break;
+    case solve_by::brute_force:
+      return details::brute_force(coins, 0, amount);
+    case solve_by::bottom_up:
+      return details::bottom_up(coins, amount);
+    case solve_by::memoization: {
+      auto lookup = details::lookup_table{};
+      return details::memoization(coins, 0, amount, lookup);
+    } break;
   }
   throw "invalid solve_by";
 }
-} // namespace make_coins
+}  // namespace make_coins
 
 namespace minimum_product {
 /* https://www.geeksforgeeks.org/minimum-product-k-integers-array-positive-integers/?ref=lbp
@@ -261,10 +273,11 @@ namespace minimum_product {
 /* Can also solve by using min heap and popping first k elements off of min heap
  */
 namespace details {
-template <typename T> int32_t min_heap(const std::vector<T> &v, int32_t k) {
+template <typename T>
+int32_t min_heap(const std::vector<T>& v, int32_t k) {
   auto heap = std::priority_queue<T, std::vector<T>, std::greater<T>>{};
 
-  for (const auto &e : v) {
+  for (const auto& e : v) {
     heap.push(e);
   }
 
@@ -277,7 +290,7 @@ template <typename T> int32_t min_heap(const std::vector<T> &v, int32_t k) {
 }
 
 template <typename T>
-int32_t brute_force(const std::vector<T> &v, size_t index, int32_t k) {
+int32_t brute_force(const std::vector<T>& v, size_t index, int32_t k) {
   if (k == 0) {
     return 1;
   }
@@ -292,8 +305,10 @@ int32_t brute_force(const std::vector<T> &v, size_t index, int32_t k) {
 using lookup_table =
     std::unordered_map<size_t, std::unordered_map<size_t, int32_t>>;
 template <typename T>
-int32_t memoization(const std::vector<T> &v, size_t index, int32_t k,
-                    lookup_table &table) {
+int32_t memoization(const std::vector<T>& v,
+                    size_t index,
+                    int32_t k,
+                    lookup_table& table) {
   if (k == 0) {
     return 1;
   }
@@ -313,13 +328,14 @@ int32_t memoization(const std::vector<T> &v, size_t index, int32_t k,
   return min_product;
 }
 
-template <typename T> int32_t bottom_up(const std::vector<T> &v, int32_t k) {
+template <typename T>
+int32_t bottom_up(const std::vector<T>& v, int32_t k) {
   auto mins =
       std::unordered_map<int32_t, std::pair<T, std::unordered_set<size_t>>>{};
   mins[0] = std::pair(1, std::unordered_set<size_t>{});
 
   for (size_t i = 1; i <= k; ++i) {
-    auto &global_min = mins[i - 1];
+    auto& global_min = mins[i - 1];
     auto min = std::pair(std::numeric_limits<T>::max(), global_min.second);
 
     for (size_t j = 0; j < v.size(); ++j) {
@@ -336,54 +352,63 @@ template <typename T> int32_t bottom_up(const std::vector<T> &v, int32_t k) {
 
   return mins[k].first;
 }
-} // namespace details
+}  // namespace details
 
 template <typename T>
-int32_t solve(solve_by by, const std::vector<T> &v, int32_t k) {
+int32_t solve(solve_by by, const std::vector<T>& v, int32_t k) {
   switch (by) {
-  case solve_by::brute_force:
-    return details::brute_force(v, 0, k);
-  case solve_by::bottom_up:
-    return details::bottom_up(v, k);
-  case solve_by::memoization: {
-    auto lookup = details::lookup_table{};
-    return details::memoization(v, 0, k, lookup);
-  } break;
+    case solve_by::brute_force:
+      return details::brute_force(v, 0, k);
+    case solve_by::bottom_up:
+      return details::bottom_up(v, k);
+    case solve_by::memoization: {
+      auto lookup = details::lookup_table{};
+      return details::memoization(v, 0, k, lookup);
+    } break;
   }
   throw "invalid solve_by";
 }
-} // namespace minimum_product
+}  // namespace minimum_product
 
 namespace kth_largest_sum {
 /* https://www.geeksforgeeks.org/k-th-largest-sum-contiguous-subarray/?ref=lbp
  */
 namespace details {
 template <typename T>
-int32_t brute_force(const std::vector<T> &v, size_t index, int32_t k) { return 0; }
+int32_t brute_force(const std::vector<T>& v, size_t index, int32_t k) {
+  return 0;
+}
 
 using lookup_table =
     std::unordered_map<size_t, std::unordered_map<size_t, int32_t>>;
 template <typename T>
-int32_t memoization(const std::vector<T> &v, size_t index, int32_t k,
-                    lookup_table &table) { return 0; }
-
-template <typename T> int32_t bottom_up(const std::vector<T> &v, int32_t k) { return 0; }
-} // namespace details
+int32_t memoization(const std::vector<T>& v,
+                    size_t index,
+                    int32_t k,
+                    lookup_table& table) {
+  return 0;
+}
 
 template <typename T>
-int32_t solve(solve_by by, const std::vector<T> &v, int32_t k) {
+int32_t bottom_up(const std::vector<T>& v, int32_t k) {
+  return 0;
+}
+}  // namespace details
+
+template <typename T>
+int32_t solve(solve_by by, const std::vector<T>& v, int32_t k) {
   switch (by) {
-  case solve_by::brute_force:
-    return details::brute_force(v, 0, k);
-  case solve_by::bottom_up:
-    return details::bottom_up(v, k);
-  case solve_by::memoization: {
-    auto lookup = details::lookup_table{};
-    return details::memoization(v, 0, k, lookup);
-  } break;
+    case solve_by::brute_force:
+      return details::brute_force(v, 0, k);
+    case solve_by::bottom_up:
+      return details::bottom_up(v, k);
+    case solve_by::memoization: {
+      auto lookup = details::lookup_table{};
+      return details::memoization(v, 0, k, lookup);
+    } break;
   }
 }
-} // namespace kth_largest_sum
+}  // namespace kth_largest_sum
 
 void run_tests() {
   auto left = std::vector<char>{'A', 'G', 'G', 'T', 'A', 'B'};
@@ -401,9 +426,10 @@ void run_tests() {
                    solve_by::bottom_up, left, right))
             << std::endl;
 
-  auto sequence1 = std::vector<int32_t>{10, 22, 9, 33, 21, 50, 41, 60, 80}; // 6
-  auto sequence2 = std::vector<int32_t>{3, 10, 2, 1, 20};                   // 3
-  auto sequence3 = std::vector<int32_t>{50, 3, 10, 7, 40, 80};              // 4
+  auto sequence1 =
+      std::vector<int32_t>{10, 22, 9, 33, 21, 50, 41, 60, 80};  // 6
+  auto sequence2 = std::vector<int32_t>{3, 10, 2, 1, 20};       // 3
+  auto sequence3 = std::vector<int32_t>{50, 3, 10, 7, 40, 80};  // 4
   std::cout << "LIS brute force "
             << std::to_string(longest_increasing_subsequence::solve(
                    solve_by::brute_force, sequence1))
@@ -454,8 +480,8 @@ void run_tests() {
             << std::to_string(make_coins::solve(solve_by::bottom_up, coins, 11))
             << std::endl;
 
-  auto sequence4 = std::vector<int32_t>{198, 76, 544, 123, 154, 675}; // 9348
-  auto sequence5 = std::vector<int32_t>{11, 8, 5, 7, 5, 100};         // 1400
+  auto sequence4 = std::vector<int32_t>{198, 76, 544, 123, 154, 675};  // 9348
+  auto sequence5 = std::vector<int32_t>{11, 8, 5, 7, 5, 100};          // 1400
   std::cout << "Min Product brute force "
             << std::to_string(
                    minimum_product::solve(solve_by::brute_force, sequence4, 2))
@@ -488,4 +514,4 @@ void run_tests() {
             << std::endl;
 }
 
-} // namespace training
+}  // namespace training

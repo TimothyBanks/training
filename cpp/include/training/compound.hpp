@@ -46,7 +46,6 @@ n: length of the badge records array
 using namespace std;
 
 int main() {
-
   vector<pair<string, string>> badge_times = {
       {"Paul", "1355"}, {"Jennifer", "1910"}, {"John", "835"},
       {"John", "830"},  {"Paul", "1315"},     {"John", "1615"},
@@ -56,21 +55,22 @@ int main() {
       {"John", "1630"}, {"Jennifer", "5"}};
 
   auto user_times = std::unordered_map<std::string, std::vector<uint16_t>>{};
-  for (const auto &badge_time : badge_times) {
+  for (const auto& badge_time : badge_times) {
     auto it = user_times.find(badge_time.first);
     if (it == std::end(user_times)) {
-      user_times.emplace(badge_time.first, std::vector<uint16_t>{std::atoi(
-                                               badge_time.second.c_str())});
+      user_times.emplace(
+          badge_time.first,
+          std::vector<uint16_t>{std::atoi(badge_time.second.c_str())});
     } else {
       it->second.emplace_back(std::atoi(badge_time.second.c_str()));
     }
   }
 
-  auto normalize = [](uint16_t &time_string) {
+  auto normalize = [](uint16_t& time_string) {
     return std::pair(time_string / 100, time_string % 100);
   };
 
-  auto print = [](auto &record, size_t begin, size_t end) {
+  auto print = [](auto& record, size_t begin, size_t end) {
     std::cout << record.first << ": ";
     for (size_t i = begin; i <= end; ++i) {
       std::cout << record.second[i] << " ";
@@ -78,7 +78,7 @@ int main() {
     std::cout << std::endl;
   };
 
-  for (auto &user_time : user_times) {
+  for (auto& user_time : user_times) {
     if (user_time.second.size() < 3) {
       continue;
     }

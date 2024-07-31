@@ -4,38 +4,39 @@
 #include <thread>
 #include <vector>
 
-template <typename T> class threadsafe_vector {
-public:
+template <typename T>
+class threadsafe_vector {
+ public:
   threadsafe_vector(std::size_t size) : m_vector(size) {}
 
   T read(size_t index) const {
     auto [bi, ni] = block_for_index(index);
-    auto &l = m_vector[bi];
+    auto& l = m_vector[bi];
     auto lock = std::shared_lock<std::shared_mutex>{l.mutex};
     return l.storage[ni];
   }
 
-  void write(std::size_t index, T &&data) {
+  void write(std::size_t index, T&& data) {
     auto [bi, ni] = block_for_index(index);
-    auto &l = m_vector[bi];
+    auto& l = m_vector[bi];
     auto lock = std::unique_lock<std::shared_mutex>{l.mutex};
     l.storage[ni] = std::move(data);
   }
 
-protected:
+ protected:
   std::pair<size_t, size_t> block_for_index(size_t index) const {
     auto block_index = index / block_size;
     auto new_index = index % block_size;
     return {block_index, new_index};
   }
 
-private:
+ private:
   constexpr static auto block_size = size_t{1};
 
   struct lockable {
     lockable(std::size_t size = 1) { storage.resize(size); }
 
-    lockable(const lockable &l) : storage(l.storage) {}
+    lockable(const lockable& l) : storage(l.storage) {}
 
     std::vector<T> storage;
     mutable std::shared_mutex mutex;
