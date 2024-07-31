@@ -228,3 +228,4 @@ long long getMinCodeEntryTime(int N, int M, vector<int> C) {
 
   return *std::min_element(state_cost.begin(), state_cost.end());
 }
+bui
