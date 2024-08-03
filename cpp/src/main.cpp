@@ -178,6 +178,7 @@
 //#include <training/hash_map.hpp>
 //#include <training/peque.hpp>
 //#include <training/small_vector.hpp>
+#include <training/asml/polygon.hpp>
 #include <type_traits>
 #include <unordered_map>
 #include <vector>
@@ -289,7 +290,13 @@ auto format_time(int seconds) {
   return ss.str();
 }
 
+extern void PolygonTest();
+
 int main(int argc, char* argv[]) {
+  PolygonTest();
+
+  return 0;
+
   std::cout << bMatch("2b2e", "  base") << std::endl;
 
   std::vector<std::vector<int>> data = {{1,60,23}, {2,23,3}, {31, 180, 0}, {3,12,0}, {23,30,31}};
