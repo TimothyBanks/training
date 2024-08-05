@@ -1,170 +1,263 @@
 #pragma once
 
-#include <array>
-#include <string>
-#include <cstring>
 #include <algorithm>
+#include <array>
+#include <boost/geometry.hpp>
+#include <boost/geometry/geometries/point_xy.hpp>
+#include <boost/geometry/geometries/polygon.hpp>
+#include <cstring>
+#include <string>
 #define POLYGONINOUTSTATUS(code) \
-    code(UNKNOWN) code(InPolygon) code(OnPolygonEdge) code(OutsidePolygon)
+  code(UNKNOWN) code(InPolygon) code(OnPolygonEdge) code(OutsidePolygon)
 
 enum class PolygonTestResult {
 #define ENUM_ITEM(x) x,
-    POLYGONINOUTSTATUS(ENUM_ITEM)
+  POLYGONINOUTSTATUS(ENUM_ITEM)
 #undef ENUM_ITEM
-    STATECOUNT
+      STATECOUNT
 };
-const std::array<std::string,static_cast<int>(PolygonTestResult::STATECOUNT)> _enumItemStrings = {{
-    #define ITEM_STRING(x) #x,
-    POLYGONINOUTSTATUS(ITEM_STRING)
-    #undef ITEM_STRING
-}};
+const std::array<std::string, static_cast<int>(PolygonTestResult::STATECOUNT)>
+    _enumItemStrings = {{
+#define ITEM_STRING(x) #x,
+        POLYGONINOUTSTATUS(ITEM_STRING)
+#undef ITEM_STRING
+    }};
 
-template<typename POINTARRAY>
-auto PrintPolygon( const POINTARRAY &polygon) ->void
-{
-    using POINTTYPE = typename POINTARRAY::value_type;
-    std::for_each( polygon.cbegin(), polygon.cend(), [](const POINTTYPE & point ) { std::cout << point << ", ";});
+template <typename POINTARRAY>
+auto PrintPolygon(const POINTARRAY& polygon) -> void {
+  using POINTTYPE = typename POINTARRAY::value_type;
+  std::for_each(std::cbegin(polygon), std::cend(polygon),
+                [](const POINTTYPE& point) { std::cout << point << ", "; });
 }
 
 // Potencially needed function
-template< typename POINTTYPE >
-auto SegmentIntersection( const POINTTYPE &seg1start, const POINTTYPE &seg1end, const POINTTYPE &seg2start, const POINTTYPE &seg2end,
-                            std::vector<POINTTYPE> &intersections)
-{   // TODO: return the intersection(s) of 2 line segments defined by seg1start, seg2end and seg2start, seg2end
-    // If the line segments overlapped, the 2 end points of the overlapped segment shall be returned
+template <typename POINTTYPE>
+auto SegmentIntersection(
+    const POINTTYPE& seg1start,
+    const POINTTYPE& seg1end,
+    const POINTTYPE& seg2start,
+    const POINTTYPE& seg2end,
+    std::vector<POINTTYPE>&
+        intersections) {  // TODO: return the intersection(s) of 2 line segments
+                          // defined by seg1start, seg2end and seg2start,
+                          // seg2end
+  // If the line segments overlapped, the 2 end points of the overlapped segment
+  // shall be returned
 
-    auto det = (seg1end.X() - seg1start.X()) * (seg2end.Y() - seg2start.Y()) -
-               (seg1end.Y() - seg1start.Y()) * (seg2end.X() - seg2start.X());
+  auto det = (seg1end.x() - seg1start.x()) * (seg2end.y() - seg2start.y()) -
+             (seg1end.y() - seg1start.y()) * (seg2end.x() - seg2start.x());
 
-    if (det == 0) {
-        // Parallel lines
-        return;
-    }
+  if (det == 0) {
+    // Parallel lines
+    return;
+  }
 
-    auto t = ((seg2start.X() - seg1start.X()) * (seg2end.Y() - seg2start.Y()) -
-              (seg2start.Y() - seg1start.Y()) * (seg2end.X() - seg2start.X())) / det;
-    auto u = ((seg2start.X() - seg1start.X()) * (seg1end.Y() - seg1start.Y()) -
-              (seg2start.Y() - seg1start.Y()) * (seg1end.X() - seg1start.X())) / det;
+  auto t = ((seg2start.x() - seg1start.x()) * (seg2end.y() - seg2start.y()) -
+            (seg2start.y() - seg1start.y()) * (seg2end.x() - seg2start.x())) /
+           det;
+  auto u = ((seg2start.x() - seg1start.x()) * (seg1end.y() - seg1start.y()) -
+            (seg2start.y() - seg1start.y()) * (seg1end.x() - seg1start.x())) /
+           det;
 
-    if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
-        auto x = seg1start.X() + t * (seg1end.X() - seg1start.X());
-        auto y = seg1start.Y() + t * (seg1end.Y() - seg1start.Y());
-        intersections.push_back(POINTTYPE(x, y));
-    }   
+  if (t >= 0 && t <= 1 && u >= 0 && u <= 1) {
+    auto x = seg1start.x() + t * (seg1end.x() - seg1start.x());
+    auto y = seg1start.y() + t * (seg1end.y() - seg1start.y());
+    intersections.push_back(POINTTYPE(x, y));
+  }
 }
 
-template< typename POINTARRAY >
-class PolygonT
-{
-public:
-    using POINTTYPE = typename POINTARRAY::value_type;
-    PolygonT( POINTARRAY &points ) : _pointArray( points) {}
-    virtual ~PolygonT() = default;
-    auto InPolygonTest( const POINTTYPE &point ) const -> std::string
-    {
-        PolygonTestResult ret = PolygonTestResult::UNKNOWN;
-        // TODO: implement this function from here and changed the ret to the correct status
+namespace detail {
 
+template <typename T>
+struct is_boost_polygon : std::false_type {};
 
-        int n = _pointArray.size();
-        bool inside = false;
+template <typename T>
+struct is_boost_polygon<boost::geometry::model::d2::point_xy<T>>
+    : std::true_type {};
 
-        for (int i = 0, j = n - 1; i < n; j = i++) {
-            auto xi = _pointArray[i].X();
-            auto yi = _pointArray[i].Y();
-            auto xj = _pointArray[j].X();
-            auto yj = _pointArray[j].Y();
+template <typename T>
+static constexpr auto is_boost_polygon_v = is_boost_polygon<T>::value;
 
-            if (((yi > point.Y()) != (yj > point.Y())) &&
-                (point.X() < (xj - xi) * (point.Y() - yi) / (yj - yi) + xi)) {
-                inside = !inside;
-            }
+}  // namespace detail
 
-            // Check if the point is on an edge
-            if ((point.Y() - yi) * (xj - xi) == (point.X() - xi) * (yj - yi) &&
-                std::min(xi, xj) <= point.X() && point.X() <= std::max(xi, xj) &&
-                std::min(yi, yj) <= point.Y() && point.Y() <= std::max(yi, yj)) {
-                ret = PolygonTestResult::OnPolygonEdge;
-                break;
-                // return _enumItemStrings[static_cast<int>(PolygonTestResult::OnPolygonEdge)];
-            }
-        }
+template <typename POINTARRAY, typename Enabled = void>
+struct Polygon {
+ public:
+  using POINTTYPE = typename POINTARRAY::value_type;
+  Polygon(POINTARRAY& points) : _pointArray(points) {}
+  virtual ~Polygon() = default;
+  auto InPolygonTest(const POINTTYPE& point) const -> std::string {
+    PolygonTestResult ret = PolygonTestResult::UNKNOWN;
+    // TODO: implement this function from here and changed the ret to the
+    // correct status
 
-        if (ret == PolygonTestResult::UNKNOWN) {
-            ret = inside ? PolygonTestResult::InPolygon : PolygonTestResult::OutsidePolygon;
-        }
+    int n = _pointArray.size();
+    bool inside = false;
 
-        // return inside ? _enumItemStrings[static_cast<int>(PolygonTestResult::InPolygon)] : _enumItemStrings[static_cast<int>(PolygonTestResult::OutsidePolygon)];
+    for (int i = 0, j = n - 1; i < n; j = i++) {
+      auto xi = _pointArray[i].x();
+      auto yi = _pointArray[i].y();
+      auto xj = _pointArray[j].x();
+      auto yj = _pointArray[j].y();
 
+      if (((yi > point.y()) != (yj > point.y())) &&
+          (point.x() < (xj - xi) * (point.y() - yi) / (yj - yi) + xi)) {
+        inside = !inside;
+      }
 
-
-
-
-        //////////////////////////////////////////
-        // std::cout << point << " in polygon ";
-        // PrintPolygon( _pointArray );
-        // std::cout << " is " << _enumItemStrings[static_cast<int>(ret)] << std::endl;
-        return _enumItemStrings[static_cast<int>(ret)];
+      // Check if the point is on an edge
+      if ((point.y() - yi) * (xj - xi) == (point.x() - xi) * (yj - yi) &&
+          std::min(xi, xj) <= point.x() && point.x() <= std::max(xi, xj) &&
+          std::min(yi, yj) <= point.y() && point.y() <= std::max(yi, yj)) {
+        ret = PolygonTestResult::OnPolygonEdge;
+        break;
+        // return
+        // _enumItemStrings[static_cast<int>(PolygonTestResult::OnPolygonEdge)];
+      }
     }
-    auto ClipSegments( const POINTARRAY &tobeclippedpath, POINTARRAY &clipped ) -> void
-    {   // tobeclippedpath is the line segment list that adjacent points forms a line segment
-        std::cout << "use ";
-        PrintPolygon( _pointArray );
-        std::cout << " to clip ";
-        PrintPolygon(tobeclippedpath);
-        // TODO: implement a function to clip segments and return the clipped segments with 'clipped'
 
+    if (ret == PolygonTestResult::UNKNOWN) {
+      ret = inside ? PolygonTestResult::InPolygon
+                   : PolygonTestResult::OutsidePolygon;
+    }
 
-POINTARRAY output = tobeclippedpath;
+    // return inside ?
+    // _enumItemStrings[static_cast<int>(PolygonTestResult::InPolygon)] :
+    // _enumItemStrings[static_cast<int>(PolygonTestResult::OutsidePolygon)];
 
-    for (size_t i = 0, j = _pointArray.size() - 1; i < _pointArray.size(); j = i++) {
-        POINTARRAY input = output;
-        output.clear();
+    //////////////////////////////////////////
+    // std::cout << point << " in polygon ";
+    // PrintPolygon( _pointArray );
+    // std::cout << " is " << _enumItemStrings[static_cast<int>(ret)] <<
+    // std::endl;
+    return _enumItemStrings[static_cast<int>(ret)];
+  }
+  auto ClipSegments(const POINTARRAY& tobeclippedpath, POINTARRAY& clipped)
+      -> void {  // tobeclippedpath is the line segment list that adjacent
+                 // points forms a line segment
+    std::cout << "use ";
+    PrintPolygon(_pointArray);
+    std::cout << " to clip ";
+    PrintPolygon(tobeclippedpath);
+    // TODO: implement a function to clip segments and return the clipped
+    // segments with 'clipped'
 
-        const POINTTYPE &clipStart = _pointArray[j];
-        const POINTTYPE &clipEnd = _pointArray[i];
+    POINTARRAY output = tobeclippedpath;
 
-        POINTTYPE prev = input.back();
-        std::vector<POINTTYPE> intersections;
+    for (size_t i = 0, j = _pointArray.size() - 1; i < _pointArray.size();
+         j = i++) {
+      POINTARRAY input = output;
+      output.clear();
 
-        // Check if the previous point is inside the clipping edge
-        bool prevInside = (InPolygonTest(prev) == "InPolygon");
+      const POINTTYPE& clipStart = _pointArray[j];
+      const POINTTYPE& clipEnd = _pointArray[i];
 
-        for (const auto &curr : input) {
-            bool currInside = (InPolygonTest(curr) == "InPolygon");
+      POINTTYPE prev = input.back();
+      std::vector<POINTTYPE> intersections;
 
-            if (currInside) {
-                if (!prevInside) {
-                    // Find the intersection point
-                    SegmentIntersection(prev, curr, clipStart, clipEnd, intersections);
-                    if (!intersections.empty()) {
-                        output.push_back(intersections.back()); // Assume the last intersection is correct
-                    }
-                }
-                output.push_back(curr);
-            } else if (prevInside) {
-                // Find the intersection point
-                SegmentIntersection(prev, curr, clipStart, clipEnd, intersections);
-                if (!intersections.empty()) {
-                    output.push_back(intersections.back()); // Assume the last intersection is correct
-                }
+      // Check if the previous point is inside the clipping edge
+      bool prevInside = (InPolygonTest(prev) == "InPolygon");
+
+      for (const auto& curr : input) {
+        bool currInside = (InPolygonTest(curr) == "InPolygon");
+
+        if (currInside) {
+          if (!prevInside) {
+            // Find the intersection point
+            SegmentIntersection(prev, curr, clipStart, clipEnd, intersections);
+            if (!intersections.empty()) {
+              output.push_back(
+                  intersections
+                      .back());  // Assume the last intersection is correct
             }
-
-            prev = curr;
-            prevInside = currInside;
+          }
+          output.push_back(curr);
+        } else if (prevInside) {
+          // Find the intersection point
+          SegmentIntersection(prev, curr, clipStart, clipEnd, intersections);
+          if (!intersections.empty()) {
+            output.push_back(
+                intersections
+                    .back());  // Assume the last intersection is correct
+          }
         }
+
+        prev = curr;
+        prevInside = currInside;
+      }
     }
 
     clipped = output;
 
+    std::cout << std::endl << " clipped is";
+    PrintPolygon(clipped);
+    std::cout << std::endl;
+  }
 
+ private:
+  POINTARRAY& _pointArray;
+};
 
+template <typename POINTARRAY>
+struct Polygon<POINTARRAY,
+               std::enable_if_t<detail::is_boost_polygon_v<
+                   typename POINTARRAY::value_type::container_type>>> {
+  using container_type = POINTARRAY;
+  using point_type = typename container_type::value_type;
+  using boost_type = typename point_type::container_type;
 
+  boost::geometry::model::polygon<boost_type> polygon_;
 
-        std::cout << std::endl << " clipped is";
-        PrintPolygon(clipped);
-        std::cout << std::endl;
+  Polygon(const container_type& points) : polygon_{[&]() {
+    auto pgon = boost::geometry::model::polygon<boost_type>{};
+    for (const auto& point : points) {
+        boost::geometry::append(pgon.outer(), point.data);
     }
-private:
-    POINTARRAY &_pointArray;
+    return pgon;
+  }()}{}
+
+  virtual ~Polygon() = default;
+
+  std::string InPolygonTest(const point_type& point) const {
+    if (boost::geometry::within(point.data, polygon_)) {
+        std::cout << "InPolygon" << std::endl;
+        return _enumItemStrings[static_cast<int>(PolygonTestResult::InPolygon)];
+    }
+
+    if (boost::geometry::covered_by(point.data, polygon_)) {
+        std::cout << "OnPolygonEdge" << std::endl;
+        return _enumItemStrings[static_cast<int>(PolygonTestResult::OnPolygonEdge)];
+    }
+
+    std::cout << "OutsidePolygon" << std::endl;
+    return _enumItemStrings[static_cast<int>(PolygonTestResult::OutsidePolygon)];
+  }
+
+  void ClipSegments(const container_type& tobeclippedpath, container_type& clipped) {  
+    auto clip = Polygon<container_type>{tobeclippedpath};
+    std::vector<boost::geometry::model::polygon<boost_type>> output;
+
+    bool is_valid = boost::geometry::is_valid(polygon_);
+    if (!is_valid) {
+        boost::geometry::correct(polygon_);
+        is_valid = boost::geometry::is_valid(polygon_);
+    }
+    is_valid = boost::geometry::is_valid(clip.polygon_);
+    if (!is_valid) {
+        boost::geometry::correct(clip.polygon_);
+        is_valid = boost::geometry::is_valid(clip.polygon_);
+    }
+
+    boost::geometry::intersection(polygon_, clip.polygon_, output);
+
+    if (!output.empty()) {
+        for (auto point : output.front().outer()) {
+            clipped.push_back(std::move(point));
+        }
+    }
+
+    std::cout << std::endl << " clipped is ";
+    PrintPolygon(clipped);
+    std::cout << std::endl;
+  }
 };
