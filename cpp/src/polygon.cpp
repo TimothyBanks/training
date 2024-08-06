@@ -84,6 +84,9 @@ struct point_trait<T, typename std::enable_if_t<is_array_v<T>>> {
   static coord_type& y(container_type& data) { return data[1]; }
 };
 
+
+// TODO:  Something to consider is to store floating points as integral types with a 
+//        fixed precision and perform the operations on intergral types.
 template <typename T>
 struct point_trait<T,
                    typename std::enable_if_t<std::is_integral_v<T> ||
@@ -230,32 +233,32 @@ using PointXY = basic_point<T>;
 
 auto PolygonTest() -> void {
   {
-    //using UIntPoint = Point2D<uint64_t>;
-    using UIntPoint = basic_point<boost::geometry::model::d2::point_xy<uint64_t>>;
+    using UIntPoint = Point2D<uint64_t>;
+    //using UIntPoint = basic_point<boost::geometry::model::d2::point_xy<uint64_t>>;
     std::vector<UIntPoint> pointArray = {
         {0, 0}, {3, 0}, {1, 4}, {1, 5}, {0, 2}, {0, 0}};
     Polygon<std::vector<UIntPoint>> polygon(pointArray);
     polygon.InPolygonTest(UIntPoint(2, 2));
   }
   {
-    //using doublePoint = Point2D<double>;
-    using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
+    using doublePoint = Point2D<double>;
+    //using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
     std::deque<doublePoint> pointArray = {
         {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {2, 3}, {-1, -1}};
     Polygon<std::deque<doublePoint>> polygon(pointArray);
     polygon.InPolygonTest(doublePoint(2, 3));
   }
   {
-    //using IntPoint = Point2D<int>;
-    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    using IntPoint = Point2D<int>;
+    //using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
     std::array<IntPoint, 6> pointArray = {
         {{-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}, {-1, -1}}};
     Polygon<std::array<IntPoint, 6>> polygon(pointArray);
     polygon.InPolygonTest(IntPoint(2, 3));
   }
   {
-    //sing doublePoint = PointXY<double>;
-    using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
+    using doublePoint = PointXY<double>;
+    //using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
     std::deque<doublePoint> pointArray = {
         {-2, -2}, {3, -2}, {2, 1}, {4, 5}, {3, 3}, {-2, -2}};
     Polygon<std::deque<doublePoint>> polygon(pointArray);

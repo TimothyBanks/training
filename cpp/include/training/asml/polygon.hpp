@@ -80,12 +80,24 @@ static constexpr auto is_boost_polygon_v = is_boost_polygon<T>::value;
 
 }  // namespace detail
 
+enum class polygon_type {
+    convex,
+    complex
+};
+
 template <typename POINTARRAY, typename Enabled = void>
 struct Polygon {
  public:
   using POINTTYPE = typename POINTARRAY::value_type;
   Polygon(POINTARRAY& points) : _pointArray(points) {}
   virtual ~Polygon() = default;
+
+
+//   POINTARRY bounding_envelope() const;
+//   polygon_type ptype() const;
+//   std::vector<Polygon> decompose();
+//   void compose(const std::vector<Polygon>& pieces);
+
   auto InPolygonTest(const POINTTYPE& point) const -> std::string {
     PolygonTestResult ret = PolygonTestResult::UNKNOWN;
     // TODO: implement this function from here and changed the ret to the
@@ -126,10 +138,10 @@ struct Polygon {
     // _enumItemStrings[static_cast<int>(PolygonTestResult::OutsidePolygon)];
 
     //////////////////////////////////////////
-    // std::cout << point << " in polygon ";
-    // PrintPolygon( _pointArray );
-    // std::cout << " is " << _enumItemStrings[static_cast<int>(ret)] <<
-    // std::endl;
+    std::cout << point << " in polygon ";
+    PrintPolygon( _pointArray );
+    std::cout << " is " << _enumItemStrings[static_cast<int>(ret)] <<
+    std::endl;
     return _enumItemStrings[static_cast<int>(ret)];
   }
   auto ClipSegments(const POINTARRAY& tobeclippedpath, POINTARRAY& clipped)
@@ -141,6 +153,16 @@ struct Polygon {
     PrintPolygon(tobeclippedpath);
     // TODO: implement a function to clip segments and return the clipped
     // segments with 'clipped'
+
+
+    // Algorithm: (Can the polygon and the clipping polygon have holes?)
+    // 1. Get the bounding envelope of both the polygon (precompute at constructor time).
+    // 2. Get the bounding envelope of the clipping polygon.
+    // 3. If those two envelopes don't intersect there can be no chance the polygons intersect.
+    // 4. Decompose the polygon (clip polygon as well) if it is concave into convex pieces (Do this as constructor time?  Can mark it as convex or concave at constructor time.)
+    // 5. Perform the clipping on convex polygons only.  Iterate over the polygon pieces and clip against the clip polygon pieces that its bounding envelope intersects.
+    // 6. Construct the resulting clip polygon from the clipped convex pieces.
+
 
     POINTARRAY output = tobeclippedpath;
 
@@ -213,6 +235,9 @@ struct Polygon<POINTARRAY,
     for (const auto& point : points) {
         boost::geometry::append(pgon.outer(), point.data);
     }
+    if (!boost::geometry::is_valid(pgon)) {
+        boost::geometry::correct(pgon);
+    }
     return pgon;
   }()}{}
 
@@ -235,21 +260,9 @@ struct Polygon<POINTARRAY,
 
   void ClipSegments(const container_type& tobeclippedpath, container_type& clipped) {  
     auto clip = Polygon<container_type>{tobeclippedpath};
-    std::vector<boost::geometry::model::polygon<boost_type>> output;
-
-    bool is_valid = boost::geometry::is_valid(polygon_);
-    if (!is_valid) {
-        boost::geometry::correct(polygon_);
-        is_valid = boost::geometry::is_valid(polygon_);
-    }
-    is_valid = boost::geometry::is_valid(clip.polygon_);
-    if (!is_valid) {
-        boost::geometry::correct(clip.polygon_);
-        is_valid = boost::geometry::is_valid(clip.polygon_);
-    }
+    auto output = std::vector<boost::geometry::model::polygon<boost_type>>{};
 
     boost::geometry::intersection(polygon_, clip.polygon_, output);
-
     if (!output.empty()) {
         for (auto point : output.front().outer()) {
             clipped.push_back(std::move(point));
