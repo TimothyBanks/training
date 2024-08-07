@@ -53,7 +53,8 @@ template <typename T>
 struct is_boost_point : std::false_type {};
 
 template <typename T>
-struct is_boost_point<boost::geometry::model::d2::point_xy<T>> : std::true_type {};
+struct is_boost_point<boost::geometry::model::d2::point_xy<T>>
+    : std::true_type {};
 
 template <typename T>
 static const auto is_boost_point_v = is_boost_point<T>::value;
@@ -84,8 +85,8 @@ struct point_trait<T, typename std::enable_if_t<is_array_v<T>>> {
   static coord_type& y(container_type& data) { return data[1]; }
 };
 
-
-// TODO:  Something to consider is to store floating points as integral types with a 
+// TODO:  Something to consider is to store floating points as integral types
+// with a
 //        fixed precision and perform the operations on intergral types.
 template <typename T>
 struct point_trait<T,
@@ -99,13 +100,13 @@ struct point_trait<T,
     point(coord_type x_, coord_type y_) : x{x_}, y{y_} {}
     point(const std::initializer_list<coord_type>& l)
         : x{[&]() {
-            if (l.size() > 1) {
+            if (l.size() >= 1) {
               return *std::cbegin(l);
             }
             return coord_type{};
           }()},
           y{[&]() {
-            if (l.size() > 2) {
+            if (l.size() >= 2) {
               auto it = std::cbegin(l);
               ++it;
               return *it;
@@ -157,7 +158,7 @@ struct underlying_type;
 
 template <typename T>
 struct underlying_type<boost::geometry::model::d2::point_xy<T>> {
-     using type = T;
+  using type = T;
 };
 
 template <typename T>
@@ -180,9 +181,13 @@ struct point_trait<T, typename std::enable_if_t<is_boost_point_v<T>>> {
     return container_type{x, y};
   }
 
-  static coord_type& x(container_type& data) { return const_cast<coord_type&>(data.x()); }
+  static coord_type& x(container_type& data) {
+    return const_cast<coord_type&>(data.x());
+  }
 
-  static coord_type& y(container_type& data) { return const_cast<coord_type&>(data.y()); }
+  static coord_type& y(container_type& data) {
+    return const_cast<coord_type&>(data.y());
+  }
 };
 }  // namespace detail
 
@@ -207,6 +212,21 @@ struct basic_point {
   basic_point& operator=(container_type c) {
     data = std::move(c);
     return *this;
+  }
+
+  template <typename U>
+  bool operator==(const basic_point<U>& other) const {
+    return x() == other.x() && y() == other.y();
+  }
+
+  template <typename U>
+  bool operator!=(const basic_point<U>& other) const {
+    return !(*this == other);
+  }
+
+  template <typename U>
+  bool operator<(const basic_point<U>& other) const {
+    return x() < other.x() || x() < other.x() && y() < other.y();
   }
 
   coord_type& x() { return trait::x(data); }
@@ -234,23 +254,20 @@ using PointXY = basic_point<T>;
 auto PolygonTest() -> void {
   {
     using UIntPoint = Point2D<uint64_t>;
-    //using UIntPoint = basic_point<boost::geometry::model::d2::point_xy<uint64_t>>;
-    std::vector<UIntPoint> pointArray = {
-        {0, 0}, {3, 0}, {1, 4}, {1, 5}, {0, 2}, {0, 0}};
+    std::vector<UIntPoint> pointArray = {{0, 0}, {3, 0}, {1, 4},
+                                         {1, 5}, {0, 2}, {0, 0}};
     Polygon<std::vector<UIntPoint>> polygon(pointArray);
     polygon.InPolygonTest(UIntPoint(2, 2));
   }
   {
     using doublePoint = Point2D<double>;
-    //using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
-    std::deque<doublePoint> pointArray = {
-        {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {2, 3}, {-1, -1}};
+    std::deque<doublePoint> pointArray = {{-1, -1}, {3, -2}, {2, 1},
+                                          {4, 5},   {2, 3},  {-1, -1}};
     Polygon<std::deque<doublePoint>> polygon(pointArray);
     polygon.InPolygonTest(doublePoint(2, 3));
   }
   {
     using IntPoint = Point2D<int>;
-    //using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
     std::array<IntPoint, 6> pointArray = {
         {{-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}, {-1, -1}}};
     Polygon<std::array<IntPoint, 6>> polygon(pointArray);
@@ -258,43 +275,102 @@ auto PolygonTest() -> void {
   }
   {
     using doublePoint = PointXY<double>;
-    //using doublePoint = basic_point<boost::geometry::model::d2::point_xy<double>>;
-    std::deque<doublePoint> pointArray = {
-        {-2, -2}, {3, -2}, {2, 1}, {4, 5}, {3, 3}, {-2, -2}};
+    std::deque<doublePoint> pointArray = {{-2, -2}, {3, -2}, {2, 1},
+                                          {4, 5},   {3, 3},  {-2, -2}};
     Polygon<std::deque<doublePoint>> polygon(pointArray);
     polygon.InPolygonTest(doublePoint(2, 3));
   }
   {
-//     using IntPoint = Point2D<int>;
-//     std::vector<IntPoint> pointArray = {
-//       {-2, 2}, {4, 5}, {2, 1}, {3, -2}, {-1, -1} };
-//     Polygon<std::vector<IntPoint>> polygon(pointArray);
-//     std::vector<IntPoint> toclip = {{1, 5}, {4, 3}, {1, 0}, {0, 0}, {-4, 3} /*{-4, 3}*/}, // TODO:  Is it necessary to close these?
-//                           clipped;
+    using UIntPoint =
+        basic_point<boost::geometry::model::d2::point_xy<uint64_t>>;
+    std::vector<UIntPoint> pointArray = {{0, 0}, {3, 0}, {1, 4},
+                                         {1, 5}, {0, 2}, {0, 0}};
+    Polygon<std::vector<UIntPoint>> polygon(pointArray);
+    polygon.InPolygonTest(UIntPoint(2, 2));
+  }
+  {
+    using doublePoint =
+        basic_point<boost::geometry::model::d2::point_xy<double>>;
+    std::deque<doublePoint> pointArray = {{-1, -1}, {3, -2}, {2, 1},
+                                          {4, 5},   {2, 3},  {-1, -1}};
+    Polygon<std::deque<doublePoint>> polygon(pointArray);
+    polygon.InPolygonTest(doublePoint(2, 3));
+  }
+  {
     using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    std::array<IntPoint, 6> pointArray = {
+        {{-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}, {-1, -1}}};
+    Polygon<std::array<IntPoint, 6>> polygon(pointArray);
+    polygon.InPolygonTest(IntPoint(2, 3));
+  }
+  {
+    using doublePoint =
+        basic_point<boost::geometry::model::d2::point_xy<double>>;
+    std::deque<doublePoint> pointArray = {{-2, -2}, {3, -2}, {2, 1},
+                                          {4, 5},   {3, 3},  {-2, -2}};
+    Polygon<std::deque<doublePoint>> polygon(pointArray);
+    polygon.InPolygonTest(doublePoint(2, 3));
+  }
+  {
+    using IntPoint = Point2D<int>;
     std::vector<IntPoint> pointArray = {
-        {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}/*, {-1, -1}*/}; // TODO:  These points appear to be needed to be specified in a clockwise orientation.
+        {-1, -1},
+        {3, -2},
+        {2, 1},
+        {4, 5},
+        {-2, 2} /*, {-1, -1}*/};  // TODO:  These points appear to be needed to
+                                  // be specified in a clockwise orientation.
     Polygon<std::vector<IntPoint>> polygon(pointArray);
-    std::vector<IntPoint> toclip = {{-4, 3}, {0, 0}, {1, 0}, {4, 3}, {1, 5}, /*{-4, 3}*/}, // TODO:  Is it necessary to close these?
-                          clipped;
+    std::vector<IntPoint>
+        toclip = {{-4, 3}, {0, 0}, {1, 0}, {4, 3}, {1, 5},
+                  /*{-4, 3}*/},  // TODO:  Is it necessary to close these?
+        clipped;
     polygon.ClipSegments(toclip, clipped);
   }
   {
-    //using IntPoint = Point2D<int>;
-    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    using IntPoint = Point2D<int>;
     std::vector<IntPoint> pointArray = {
-        {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}, {-1, -1}};
+        {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}};
     Polygon<std::vector<IntPoint>> polygon(pointArray);
-    std::vector<IntPoint> toclip = {{0, 1}, {1, 2}, {1, 0}, {0, 0}, {0, 1}},
-                          clipped;
+    std::vector<IntPoint> toclip = {{0, 1}, {1, 2}, {1, 0}, {0, 0}}, clipped;
     polygon.ClipSegments(toclip, clipped);
   }
   {
-    //using IntPoint = Point2D<int>;
-    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
-    std::vector<IntPoint> pointArray = {{0, 0}, {0, 4}, {4, 4}, {4, 0}, {0, 0}};
+    using IntPoint = Point2D<int>;
+    std::vector<IntPoint> pointArray = {{0, 0}, {0, 4}, {4, 4}, {4, 0}};
     Polygon<std::vector<IntPoint>> polygon(pointArray);
-    std::vector<IntPoint> toclip = {{2, 2}, {2, 6}, {6, 6}, {6, 2}, {2, 2}}, clipped;
+    std::vector<IntPoint> toclip = {{2, 2}, {2, 6}, {6, 6}, {6, 2}}, clipped;
+    polygon.ClipSegments(toclip, clipped);
+  }
+  {
+    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    std::vector<IntPoint> pointArray = {
+        {-1, -1},
+        {3, -2},
+        {2, 1},
+        {4, 5},
+        {-2, 2} /*, {-1, -1}*/};  // TODO:  These points appear to be needed to
+                                  // be specified in a clockwise orientation.
+    Polygon<std::vector<IntPoint>> polygon(pointArray);
+    std::vector<IntPoint>
+        toclip = {{-4, 3}, {0, 0}, {1, 0}, {4, 3}, {1, 5},
+                  /*{-4, 3}*/},  // TODO:  Is it necessary to close these?
+        clipped;
+    polygon.ClipSegments(toclip, clipped);
+  }
+  {
+    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    std::vector<IntPoint> pointArray = {
+        {-1, -1}, {3, -2}, {2, 1}, {4, 5}, {-2, 2}};
+    Polygon<std::vector<IntPoint>> polygon(pointArray);
+    std::vector<IntPoint> toclip = {{0, 1}, {1, 2}, {1, 0}, {0, 0}}, clipped;
+    polygon.ClipSegments(toclip, clipped);
+  }
+  {
+    using IntPoint = basic_point<boost::geometry::model::d2::point_xy<int64_t>>;
+    std::vector<IntPoint> pointArray = {{0, 0}, {0, 4}, {4, 4}, {4, 0}};
+    Polygon<std::vector<IntPoint>> polygon(pointArray);
+    std::vector<IntPoint> toclip = {{2, 2}, {2, 6}, {6, 6}, {6, 2}}, clipped;
     polygon.ClipSegments(toclip, clipped);
   }
 }

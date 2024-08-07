@@ -212,7 +212,6 @@ struct my_type {
   my_type& operator=(my_type&&) = default;
 };
 
-
 std::tuple<int, std::string, int> parse_log(std::string& log) {
   std::stringstream ss(log);
   std::string id, type, time;
@@ -224,7 +223,7 @@ std::tuple<int, std::string, int> parse_log(std::string& log) {
 
 auto solve(int n, std::vector<std::string>& logs) {
   auto result = std::vector<int>(n, 0);
-  auto stk = std::stack<std::pair<int, int>>{}; // <id, start_time>
+  auto stk = std::stack<std::pair<int, int>>{};  // <id, start_time>
   for (auto& log : logs) {
     auto [id, type, time] = parse_log(log);
 
@@ -236,8 +235,7 @@ auto solve(int n, std::vector<std::string>& logs) {
         // update stack top
         result[p.first] += time - p.second;
         stk.push(std::make_pair(id, time));
-      }
-      else if (type == "end") {
+      } else if (type == "end") {
         result[id] += time - p.second + 1;
         stk.pop();
         if (!stk.empty()) {
@@ -250,26 +248,26 @@ auto solve(int n, std::vector<std::string>& logs) {
 }
 
 bool bMatch(const std::string& pattern, const std::string& word) {
-    int pos = 0; // Current position in the word
+  int pos = 0;  // Current position in the word
 
-    for (char c : pattern) {
-        if (c >= 'a' && c <= 'z') {
-            // Ensure the current position in the word is valid
-            if (pos >= word.size() || word[pos] != c) {
-                return false;
-            }
-            ++pos; // Move to the next position in the word
-        } else if (c >= '0' && c <= '9') {
-            // Skip the specified number of characters
-            pos += c - '0';
-        } else {
-            // Invalid character in pattern
-            return false;
-        }
+  for (char c : pattern) {
+    if (c >= 'a' && c <= 'z') {
+      // Ensure the current position in the word is valid
+      if (pos >= word.size() || word[pos] != c) {
+        return false;
+      }
+      ++pos;  // Move to the next position in the word
+    } else if (c >= '0' && c <= '9') {
+      // Skip the specified number of characters
+      pos += c - '0';
+    } else {
+      // Invalid character in pattern
+      return false;
     }
+  }
 
-    // Check if we have used the entire word length
-    return pos == word.size();
+  // Check if we have used the entire word length
+  return pos == word.size();
 }
 
 auto format_time(int seconds) {
@@ -299,7 +297,8 @@ int main(int argc, char* argv[]) {
 
   std::cout << bMatch("2b2e", "  base") << std::endl;
 
-  std::vector<std::vector<int>> data = {{1,60,23}, {2,23,3}, {31, 180, 0}, {3,12,0}, {23,30,31}};
+  std::vector<std::vector<int>> data = {
+      {1, 60, 23}, {2, 23, 3}, {31, 180, 0}, {3, 12, 0}, {23, 30, 31}};
   std::map<int, int> mp;
   std::unordered_map<int, int> unmp;
   std::vector<std::vector<int>> res;
@@ -329,23 +328,23 @@ int main(int argc, char* argv[]) {
     }
     res.push_back({startID, lastID, totalTime, cnts});
   }
-  std::sort(res.begin(), res.end(), [](auto& a, auto& b) { return a[2] > b[2]; });
+  std::sort(res.begin(), res.end(),
+            [](auto& a, auto& b) { return a[2] > b[2]; });
   for (auto& line : res) {
     std::cout << "-" << std::endl;
     std::cout << "start_job: " << line[0] << std::endl;
     std::cout << "last_job: " << line[1] << std::endl;
     std::cout << "number_of_jobs: " << line[3] << std::endl;
     std::cout << "job_chain_runtime: " << format_time(line[2]) << std::endl;
-    std::cout << "average_job_time: " << format_time(line[2] / line[3]) << std::endl;
+    std::cout << "average_job_time: " << format_time(line[2] / line[3])
+              << std::endl;
     std::cout << "-" << std::endl;
   }
 
-
-
   // {
-  // auto logs = std::vector<std::string>{"0:start:0", "2:start:4", "2:end:5", "1:start:7", "1:end:10", "0:end:11"};
-  // auto result = solve(3, logs);
-  // for (auto& r : result)
+  // auto logs = std::vector<std::string>{"0:start:0", "2:start:4", "2:end:5",
+  // "1:start:7", "1:end:10", "0:end:11"}; auto result = solve(3, logs); for
+  // (auto& r : result)
   //   std::cout << r << ", ";
   // }
   // {
@@ -357,9 +356,9 @@ int main(int argc, char* argv[]) {
   // }
   // {
   //   std::cout << std::endl;
-  //   auto logs = std::vector<std::string>{"0:start:0", "2:start:4", "2:end:5", "1:start:7", "0:end:8", "1:end:11"};
-  //   auto result = solve(3, logs);
-  //   for (auto& r : result)
+  //   auto logs = std::vector<std::string>{"0:start:0", "2:start:4", "2:end:5",
+  //   "1:start:7", "0:end:8", "1:end:11"}; auto result = solve(3, logs); for
+  //   (auto& r : result)
   //     std::cout << r << ", ";
   // }
 
